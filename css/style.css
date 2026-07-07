@@ -183,9 +183,11 @@ body::after {
 .nav-links a:hover { background: var(--pink-soft); }
 .nav-links a.is-active { background: var(--ink); color: var(--white); }
 
-/* EN/DE language switch */
+/* EN/DE language switch — pushed to the right edge; the style toggle
+   sits snug beside it so both switches read as one control group */
 .lang-toggle {
   flex: 0 0 auto;
+  margin-left: auto;
   padding: .4rem .85rem;
   font-family: var(--font-mono);
   font-size: .78rem;
@@ -208,6 +210,7 @@ body::after {
 
 .theme-toggle {
   flex: 0 0 auto;
+  margin-left: -.55rem;
   padding: .4rem .85rem;
   font-family: var(--font-mono);
   font-size: .78rem;
@@ -1875,6 +1878,24 @@ body.lightbox-open { overflow: hidden; }
 [data-theme="clean"] .service:hover::after,
 [data-theme="clean"] .product-card:hover::after,
 [data-theme="clean"] .collage-card:hover .card::after { opacity: 1; }
+
+/* experience tabs carry the same pink corner-glow on hover. No
+   overflow:hidden here so the print's hover lift-shadow isn't clipped —
+   the gradient already fades to transparent inside the row's own box. */
+[data-theme="clean"] .work-row { position: relative; }
+[data-theme="clean"] .work-row::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 120% at 100% 100%,
+    rgba(255, 128, 203, .34) 0%,
+    rgba(255, 128, 203, .14) 32%,
+    rgba(255, 128, 203, 0) 62%);
+  opacity: 0;
+  transition: opacity .3s ease-out;
+  pointer-events: none;
+}
+[data-theme="clean"] .work-row:hover::after { opacity: 1; }
 
 /* projects read black & white; the hover glow (above) is the single
    affordance that signals the card is a link. photography, the CV and the

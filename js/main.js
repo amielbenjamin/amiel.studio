@@ -782,7 +782,9 @@
     if (!btn) return;
 
     var theme = document.documentElement.getAttribute("data-theme") || "bold";
-    btn.textContent = theme === "clean" ? "CLEAN" : "BOLD";
+    /* label the destination, like the language toggle: on bold it reads
+       CLEAN and takes you to clean, on clean it reads BOLD */
+    btn.textContent = theme === "clean" ? "BOLD" : "CLEAN";
     btn.setAttribute("aria-pressed", theme === "clean" ? "true" : "false");
 
     btn.addEventListener("click", function () {
