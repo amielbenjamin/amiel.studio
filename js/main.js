@@ -99,10 +99,12 @@
       width: STAGE + "px", height: STAGE + "px",
       position: "absolute", left: "50%", top: "50%",
       transform: "translate(-50%, -50%) scale(" + DOCK_SCALE + ")",
+      transition: "transform .22s cubic-bezier(.34, 1.56, .64, 1)",
       display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "visible", perspective: PERSPECTIVE + "px",
       touchAction: "none", pointerEvents: "none"
     }, noSelect);
+    var DOCK_SCALE_HOVER = 0.20;
 
     function makeSvg() {
       var svg = document.createElementNS(NS, "svg");
@@ -242,6 +244,17 @@
       btn.focus();
     }
     btn.addEventListener("click", function () { if (!expanded) openCube(); });
+
+    /* nudge the docked cube slightly larger on hover/focus so it reads as
+       an interactive navigator, not decoration */
+    function dockScale(s) {
+      if (expanded) return;
+      stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+    }
+    btn.addEventListener("pointerenter", function () { dockScale(DOCK_SCALE_HOVER); });
+    btn.addEventListener("pointerleave", function () { dockScale(DOCK_SCALE); });
+    btn.addEventListener("focus", function () { dockScale(DOCK_SCALE_HOVER); });
+    btn.addEventListener("blur", function () { dockScale(DOCK_SCALE); });
     /* the ✕ is the only way out — backdrop clicks and ESC stay inert so a
        stray click while grabbing the cube can't dismiss the navigator */
     closeBtn.addEventListener("click", closeCube);

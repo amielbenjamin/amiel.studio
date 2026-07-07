@@ -222,14 +222,25 @@ body::after {
   border-radius: 999px;
   box-shadow: 2px 2px 0 var(--ink);
   cursor: var(--cursor-point);
-  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease,
+              color .2s ease, border-color .2s ease, border-radius .2s ease,
+              letter-spacing .2s ease;
 }
+/* the style toggle previews its destination on hover: on the bold page it
+   reads CLEAN and morphs into the calm editorial chip (ink fill, flat,
+   body font) — a click's outcome is felt before it happens */
 .theme-toggle:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--ink);
-  background: var(--pink-soft);
+  transform: none;
+  box-shadow: none;
+  background: var(--ink);
+  color: var(--paper-hi);
+  border-color: transparent;
+  border-radius: 3px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0;
 }
-.theme-toggle:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+.theme-toggle:active { transform: translateY(1px); box-shadow: none; }
 
 .nav-cta {
   display: inline-block;
@@ -1629,6 +1640,27 @@ body.lightbox-open { overflow: hidden; }
 [data-theme="clean"] .lang-toggle:active,
 [data-theme="clean"] .theme-toggle:active,
 [data-theme="clean"] .carousel-btn:active { transform: none; box-shadow: none; }
+
+/* on the clean page the toggle reads BOLD — hovering snaps it into the
+   die-cut sticker look (hot pink, hard offset shadow, mono pill) as a live
+   preview of the bold theme it links to. Literal bold-palette values on
+   purpose: the clean tokens (--pink → ink, --radius → 2px) can't express
+   the other theme's identity. */
+[data-theme="clean"] .theme-toggle:hover {
+  transform: translate(-1px, -1px);
+  background: hsl(326, 100%, 75%);
+  color: hsl(0, 0%, 6%);
+  border: 1.5px solid hsl(0, 0%, 6%);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 hsl(0, 0%, 6%);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+[data-theme="clean"] .theme-toggle:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 hsl(0, 0%, 6%);
+}
 
 [data-theme="clean"] .sec-title {
   font-weight: 700;
