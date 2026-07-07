@@ -16,6 +16,14 @@
     var btn = document.getElementById("cubeNav");
     if (!btn) return;
 
+    /* clean theme wants a light-grey outlined cube whose faces bloom with a
+       pink gradient on hover; bold keeps its hot-pink sticker faces */
+    var cubeClean = document.documentElement.getAttribute("data-theme") === "clean";
+    var faceBg = cubeClean ? "#E7E7EA" : "var(--pink)";
+    var faceBorder = cubeClean ? "2px solid rgba(20, 20, 24, .16)" : "3px solid var(--ink, #16161a)";
+    var faceText = cubeClean ? "var(--ink, #1a1a1a)" : "var(--white, #fff)";
+    var faceHoverBg = "linear-gradient(150deg, rgba(255, 128, 203, .78) 0%, rgba(255, 128, 203, .22) 100%)";
+
     var HALF = 80, PERSPECTIVE = 1400, STAGE = 340, SVG_SIZE = 360, CORNER_R = 10, STROKE = 9;
     var DOCK_SCALE = 0.17, DOCK_SIZE = 48;
     var NS = "http://www.w3.org/2000/svg";
@@ -130,26 +138,33 @@
       f.setAttribute("data-face-target", face.target);
       Object.assign(f.style, {
         position: "absolute", width: HALF * 2 + "px", height: HALF * 2 + "px",
-        boxSizing: "border-box", background: "var(--pink)",
-        border: "3px solid var(--ink, #16161a)",
+        boxSizing: "border-box", background: faceBg,
+        border: faceBorder,
         transform: face.transform,
         display: "flex", alignItems: "center", justifyContent: "center",
-        backfaceVisibility: "hidden", cursor: "var(--cursor-point)"
+        backfaceVisibility: "hidden", cursor: "var(--cursor-point)",
+        transition: "background .25s ease-out"
       }, noSelect);
       var tag = document.createElement("div");
       tag.textContent = face.tag;
       Object.assign(tag.style, {
         position: "absolute", top: "8px", left: "8px",
         fontSize: "8px", fontFamily: "'Droid Sans Mono', monospace", fontWeight: "700",
-        color: "var(--white, #fff)", pointerEvents: "none"
+        color: faceText, pointerEvents: "none"
       }, noSelect);
       var label = document.createElement("div");
       label.textContent = face.label;
       Object.assign(label.style, {
-        fontSize: "15px", fontWeight: "700", color: "var(--white, #fff)",
+        fontSize: "15px", fontWeight: "700", color: faceText,
         fontFamily: "'Unbounded', sans-serif", textAlign: "center",
         padding: "0 8px", pointerEvents: "none"
       }, noSelect);
+      /* clean: hovering a face washes it with the pink gradient, echoing
+         the card hover-glow so the face reads as a clickable link */
+      if (cubeClean) {
+        f.addEventListener("pointerenter", function () { f.style.background = faceHoverBg; });
+        f.addEventListener("pointerleave", function () { f.style.background = faceBg; });
+      }
       f.appendChild(tag);
       f.appendChild(label);
       scene.appendChild(f);
@@ -287,6 +302,36 @@
       })();
     }
     updateCube();
+  })();
+
+  /* ---------- cursor gradient dot (clean theme, fine pointers) ----------
+     A soft pink glow eases along behind the pointer — the clean theme's
+     lone spot of colour, made kinetic. Skipped on touch / coarse pointers
+     and when reduced motion is requested. */
+  (function () {
+    if (document.documentElement.getAttribute("data-theme") !== "clean") return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var dot = document.createElement("div");
+    dot.className = "cursor-glow";
+    dot.setAttribute("aria-hidden", "true");
+    document.body.appendChild(dot);
+
+    var tx = 0, ty = 0, x = 0, y = 0, primed = false;
+    window.addEventListener("pointermove", function (e) {
+      if (e.pointerType && e.pointerType !== "mouse") return;
+      tx = e.clientX; ty = e.clientY;
+      if (!primed) { primed = true; x = tx; y = ty; dot.style.opacity = "1"; }
+    });
+    document.addEventListener("mouseleave", function () { dot.style.opacity = "0"; });
+
+    (function follow() {
+      requestAnimationFrame(follow);
+      x += (tx - x) * 0.18;
+      y += (ty - y) * 0.18;
+      dot.style.transform = "translate(-50%, -50%) translate(" + x + "px, " + y + "px)";
+    })();
   })();
 
   /* ---------- photography carousel (always active) ----------
@@ -728,6 +773,33 @@
     });
   })();
 
+  /* theme switch — "bold" (Die-Cut Studio) ⇄ "clean" (Quiet Editorial).
+     The data-theme attribute is set by an inline <head> snippet before
+     first paint (no FOUC); this button only persists the new choice and
+     reloads so CSS and the motion choreography re-init together. */
+  (function () {
+    var btn = document.getElementById("themeToggle");
+    if (!btn) return;
+
+    var theme = document.documentElement.getAttribute("data-theme") || "bold";
+    btn.textContent = theme === "clean" ? "CLEAN" : "BOLD";
+    btn.setAttribute("aria-pressed", theme === "clean" ? "true" : "false");
+
+    btn.addEventListener("click", function () {
+      var next = theme === "clean" ? "bold" : "clean";
+      try { localStorage.setItem("amiel-theme", next); } catch (e) { /* storage blocked — session only */ }
+      /* a ?theme= param in the URL would override the new choice on
+         reload — strip it before reloading */
+      if (/[?&]theme=/.test(location.search)) {
+        var qs = location.search
+          .replace(/([?&])theme=(clean|bold)&?/, "$1")
+          .replace(/[?&]$/, "");
+        history.replaceState(null, "", location.pathname + qs + location.hash);
+      }
+      location.reload();
+    });
+  })();
+
   /* dev helper: ?only=<id|class> isolates one section for review */
   var only = location.search.match(/[?&]only=([a-z-]+)/);
   if (only) {
@@ -743,29 +815,24 @@
   gsap.registerPlugin(ScrollTrigger);
   document.documentElement.classList.add("anim-ready");
 
+  /* two motion languages on the same data-reveal/data-parallax hooks:
+     bold = tactile sticker slaps, clean = calm editorial fades */
+  var themeClean = document.documentElement.getAttribute("data-theme") === "clean";
+
   /* ---------- helpers ---------- */
   function stickerIn(targets, vars) {
-    return gsap.to(targets, Object.assign({
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      rotation: 0,
-      duration: 0.7,
-      ease: "back.out(1.5)",
-      clearProps: "transform",
-      overwrite: "auto"
-    }, vars || {}));
+    var base = themeClean
+      ? { opacity: 1, y: 0, duration: 0.55, ease: "power2.out", clearProps: "transform", overwrite: "auto" }
+      : { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.7, ease: "back.out(1.5)", clearProps: "transform", overwrite: "auto" };
+    return gsap.to(targets, Object.assign(base, vars || {}));
   }
 
-  /* prime every reveal target: slightly dropped, scaled and twisted,
-     like a sticker hovering above the page before it lands */
+  /* prime every reveal target — bold: slightly dropped, scaled and
+     twisted like a hovering sticker; clean: a soft rise, nothing more */
   gsap.utils.toArray("[data-reveal]").forEach(function (el, i) {
-    gsap.set(el, {
-      opacity: 0,
-      y: 34,
-      scale: 0.97,
-      rotation: (i % 2 ? 1 : -1) * 1.6
-    });
+    gsap.set(el, themeClean
+      ? { opacity: 0, y: 24 }
+      : { opacity: 0, y: 34, scale: 0.97, rotation: (i % 2 ? 1 : -1) * 1.6 });
   });
 
   /* ---------- hero load sequence ---------- */
@@ -774,8 +841,12 @@
     stickerIn(heroTargets, { stagger: 0.09, delay: 0.15 });
   }
 
-  /* nav drops in */
-  gsap.from(".nav-pill", { y: -70, opacity: 0, duration: 0.8, ease: "power3.out", clearProps: "all" });
+  /* nav enters — bold drops in, clean simply fades */
+  if (themeClean) {
+    gsap.from(".nav-pill", { opacity: 0, duration: 0.6, ease: "power2.out", clearProps: "all" });
+  } else {
+    gsap.from(".nav-pill", { y: -70, opacity: 0, duration: 0.8, ease: "power3.out", clearProps: "all" });
+  }
 
   /* ---------- scroll reveals (everything below the hero) ---------- */
   ScrollTrigger.batch(
@@ -791,57 +862,62 @@
     }
   );
 
-  /* ---------- hero parallax drift ---------- */
-  gsap.utils.toArray("[data-parallax]").forEach(function (el) {
-    var strength = parseFloat(el.getAttribute("data-parallax")) || 5;
-    gsap.to(el, {
-      yPercent: strength,
-      ease: "none",
-      scrollTrigger: {
-        trigger: el.closest("section") || el,
-        start: "top top",
-        end: "bottom top",
-        scrub: 0.6
-      }
+  /* bold-only scroll flourishes — clean stays perfectly still while
+     scrolling: no parallax, no drifting columns, no title tilt */
+  if (!themeClean) {
+
+    /* ---------- hero parallax drift ---------- */
+    gsap.utils.toArray("[data-parallax]").forEach(function (el) {
+      var strength = parseFloat(el.getAttribute("data-parallax")) || 5;
+      gsap.to(el, {
+        yPercent: strength,
+        ease: "none",
+        scrollTrigger: {
+          trigger: el.closest("section") || el,
+          start: "top top",
+          end: "bottom top",
+          scrub: 0.6
+        }
+      });
     });
-  });
 
-  /* ---------- photography columns: differential scroll speeds ---------- */
-  gsap.utils.toArray(".photo-col").forEach(function (col) {
-    var speed = parseFloat(col.getAttribute("data-speed")) || 1;
-    if (speed === 1) return;
-    gsap.fromTo(col,
-      { y: 0 },
-      {
-        y: function () { return (1 - speed) * 260; },
-        ease: "none",
-        scrollTrigger: {
-          trigger: col.closest(".photography"),
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 0.8,
-          invalidateOnRefresh: true
+    /* ---------- photography columns: differential scroll speeds ---------- */
+    gsap.utils.toArray(".photo-col").forEach(function (col) {
+      var speed = parseFloat(col.getAttribute("data-speed")) || 1;
+      if (speed === 1) return;
+      gsap.fromTo(col,
+        { y: 0 },
+        {
+          y: function () { return (1 - speed) * 260; },
+          ease: "none",
+          scrollTrigger: {
+            trigger: col.closest(".photography"),
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 0.8,
+            invalidateOnRefresh: true
+          }
         }
-      }
-    );
-  });
+      );
+    });
 
-  /* ---------- section titles get a tiny scrub tilt for life ---------- */
-  gsap.utils.toArray(".sec-title").forEach(function (title) {
-    gsap.fromTo(title,
-      { xPercent: -1.5 },
-      {
-        xPercent: 1.5,
-        ease: "none",
-        scrollTrigger: {
-          trigger: title,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 1.2
+    /* ---------- section titles get a tiny scrub tilt for life ---------- */
+    gsap.utils.toArray(".sec-title").forEach(function (title) {
+      gsap.fromTo(title,
+        { xPercent: -1.5 },
+        {
+          xPercent: 1.5,
+          ease: "none",
+          scrollTrigger: {
+            trigger: title,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2
+          }
         }
-      }
-    );
-  });
+      );
+    });
+  }
 
   /* ---------- active nav link tracking ---------- */
   var navLinks = document.querySelectorAll(".nav-links a[href^='#']");
@@ -871,8 +947,8 @@
     }
   });
 
-  /* ---------- magnetic buttons (fine pointers only) ---------- */
-  if (window.matchMedia("(pointer: fine)").matches) {
+  /* ---------- magnetic buttons (bold only, fine pointers only) ---------- */
+  if (!themeClean && window.matchMedia("(pointer: fine)").matches) {
     document.querySelectorAll(".btn, .nav-cta").forEach(function (btn) {
       var qx = gsap.quickTo(btn, "x", { duration: 0.35, ease: "power3.out" });
       var qy = gsap.quickTo(btn, "y", { duration: 0.35, ease: "power3.out" });
