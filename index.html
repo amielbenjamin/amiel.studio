@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700;900&family=Epilogue:ital,wght@0,400;0,500;0,700;1,400&family=Droid+Sans+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=10">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23ff80cb'/%3E%3Ctext x='50' y='66' font-size='52' text-anchor='middle' font-family='sans-serif' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -21,27 +21,16 @@
         BENJAMIN&nbsp;AMIEL
       </a>
       <ul class="nav-links">
-        <li><a href="#work">work</a></li>
         <li><a href="#product">product</a></li>
+        <li><a href="#experience">experience</a></li>
         <li><a href="#social">social</a></li>
         <li><a href="#photography">photography</a></li>
         <li><a href="#about">about</a></li>
       </ul>
-      <a class="nav-cta" href="https://amiel.studio/s/CV_Amiel.pdf" target="_blank" rel="noopener">CV ↓</a>
-      <button class="nav-burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
-        <span></span><span></span><span></span>
-      </button>
+      <button class="lang-toggle" id="langToggle" type="button" aria-label="Deutsch / English" aria-pressed="false">DE</button>
+      <button class="nav-cube" id="cubeNav" type="button" aria-label="Open cube navigator" aria-haspopup="dialog" aria-expanded="false" hidden></button>
     </nav>
   </header>
-
-  <div class="mobile-menu" id="mobileMenu">
-    <a href="#work">work</a>
-    <a href="#product">product</a>
-    <a href="#social">social</a>
-    <a href="#photography">photography</a>
-    <a href="#about">about</a>
-    <a href="https://amiel.studio/s/CV_Amiel.pdf" target="_blank" rel="noopener">CV ↓</a>
-  </div>
 
   <main id="main">
 
@@ -59,7 +48,7 @@
             turning technical precision and social dynamics into products, spaces and cultural moments.
           </p>
           <div class="hero__actions" data-reveal>
-            <a class="btn btn--pink" href="#work">see the work <span class="arr">→</span></a>
+            <a class="btn btn--pink" href="#product">see the work <span class="arr">→</span></a>
             <a class="btn" href="#contact">say hi <span class="arr">→</span></a>
           </div>
         </div>
@@ -70,18 +59,17 @@
           </div>
           <img class="hero__portrait sticker" src="assets/img/Portrait_linkedin_Kopie.png"
                alt="Portrait of Benjamin Amiel" width="640" height="700" data-reveal data-parallax="6">
-          <span class="hero__badge hero__badge--a" data-reveal>est. Zürich → Wien</span>
           <span class="hero__badge hero__badge--b" data-reveal>#masterofdisaster</span>
         </div>
       </div>
 
       <div class="ticker ticker--flat hero__ticker" aria-hidden="true">
-        <div class="ticker__track" style="--ticker-speed: 34s;">
+        <div class="ticker__track" style="--ticker-speed: 48s;">
           <div class="ticker__inner">
-            <span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span>
+            <span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span><span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span><span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span>
           </div>
           <div class="ticker__inner">
-            <span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span>
+            <span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span><span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span><span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span>
           </div>
         </div>
       </div>
@@ -127,21 +115,87 @@
       </div>
     </section>
 
-    <!-- ================= WORK / EXPERIENCE ================= -->
-    <section class="work" id="work">
+    <!-- ================= PRODUCT ================= -->
+    <section class="product" id="product">
       <div class="wrap sec-head">
         <span class="sec-index">( 01 )</span>
+        <h2 class="sec-title" data-reveal>product</h2>
+        <p class="sec-note" data-reveal>Industrial design with an engineer's patience — modelled, rendered, prototyped, shipped.</p>
+      </div>
+
+      <div class="ticker ticker--pink ticker--reverse" aria-hidden="true">
+        <div class="ticker__track" style="--ticker-speed: 45s;">
+          <div class="ticker__inner">
+            <span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span><span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span><span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span>
+          </div>
+          <div class="ticker__inner">
+            <span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span><span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span><span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wrap product-grid">
+        <a class="product-card card" href="random-3d.html" data-reveal>
+          <div class="product-card__media">
+            <img src="assets/img/random3d_8_.jpg" alt="random 3D — photorealistic product rendering" loading="lazy" width="600" height="600">
+          </div>
+          <div class="product-card__body">
+            <span class="product-card__tag">3D print · rendering · CAD</span>
+            <h3>random 3D <span class="arr">↗</span></h3>
+            <p>A versatile collection of 3D modeling and photorealistic rendering projects showcasing technical expertise in product and interior design.</p>
+          </div>
+        </a>
+
+        <a class="product-card card" href="swissloop.html" data-reveal>
+          <div class="product-card__media">
+            <img src="assets/img/Swissloop_2021_Top_Kopie_2.png" alt="Swissloop — hyperloop pod developed at ETH Zurich" loading="lazy" width="600" height="600">
+          </div>
+          <div class="product-card__body">
+            <span class="product-card__tag">engineering · carbon · ETH</span>
+            <h3>Swissloop <span class="arr">↗</span></h3>
+            <p>An award-winning, high-speed Hyperloop pod featuring custom linear induction motors and a lightweight carbon structure developed at ETH Zurich.</p>
+          </div>
+        </a>
+
+        <a class="product-card card" href="lightlock.html" data-reveal>
+          <div class="product-card__media">
+            <img src="assets/img/Kurbel_knick_hinten.jpg" alt="Light-Lock — bicycle pedal with integrated light and lock" loading="lazy" width="600" height="600">
+          </div>
+          <div class="product-card__body">
+            <span class="product-card__tag">mobility · safety · mechanism</span>
+            <h3>Light-Lock <span class="arr">↗</span></h3>
+            <p>A hybrid bicycle pedal that seamlessly integrates safety lighting and a mechanical anti-theft locking mechanism into a single, streamlined component.</p>
+          </div>
+        </a>
+
+        <a class="product-card card" href="snapball.html" data-reveal>
+          <div class="product-card__media">
+            <img src="assets/img/Snapball_7_.jpg" alt="SnapBall — modular magnetic 3D-printed football" loading="lazy" width="600" height="600">
+          </div>
+          <div class="product-card__body">
+            <span class="product-card__tag">3D print · magnets · play</span>
+            <h3>SnapBall <span class="arr">↗</span></h3>
+            <p>A modular, 3D-printed football that utilizes integrated magnets to function as an interactive puzzle, a tactile fidget toy, or a minimalist design object.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= WORK / EXPERIENCE ================= -->
+    <section class="work" id="experience">
+      <div class="wrap sec-head">
+        <span class="sec-index">( 02 )</span>
         <h2 class="sec-title" data-reveal>experience</h2>
         <p class="sec-note" data-reveal>Curated events, installations and collective experiments — the master-of-disaster department.</p>
       </div>
 
       <div class="ticker" aria-hidden="true">
-        <div class="ticker__track" style="--ticker-speed: 30s;">
+        <div class="ticker__track" style="--ticker-speed: 42s;">
           <div class="ticker__inner">
-            <span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span>
+            <span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span><span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span><span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span>
           </div>
           <div class="ticker__inner">
-            <span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span>
+            <span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span><span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span><span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span>
           </div>
         </div>
       </div>
@@ -217,72 +271,6 @@
       </div>
     </section>
 
-    <!-- ================= PRODUCT ================= -->
-    <section class="product" id="product">
-      <div class="wrap sec-head">
-        <span class="sec-index">( 02 )</span>
-        <h2 class="sec-title" data-reveal>product</h2>
-        <p class="sec-note" data-reveal>Industrial design with an engineer's patience — modelled, rendered, prototyped, shipped.</p>
-      </div>
-
-      <div class="ticker ticker--pink ticker--reverse" aria-hidden="true">
-        <div class="ticker__track" style="--ticker-speed: 32s;">
-          <div class="ticker__inner">
-            <span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span>
-          </div>
-          <div class="ticker__inner">
-            <span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="wrap product-grid">
-        <a class="product-card card" href="random-3d.html" data-reveal>
-          <div class="product-card__media">
-            <img src="assets/img/random3d_8_.jpg" alt="random 3D — photorealistic product rendering" loading="lazy" width="600" height="600">
-          </div>
-          <div class="product-card__body">
-            <span class="product-card__tag">3D print · rendering · CAD</span>
-            <h3>random 3D <span class="arr">↗</span></h3>
-            <p>A versatile collection of 3D modeling and photorealistic rendering projects showcasing technical expertise in product and interior design.</p>
-          </div>
-        </a>
-
-        <a class="product-card card" href="swissloop.html" data-reveal>
-          <div class="product-card__media">
-            <img src="assets/img/Swissloop_2021_Top_Kopie_2.png" alt="Swissloop — hyperloop pod developed at ETH Zurich" loading="lazy" width="600" height="600">
-          </div>
-          <div class="product-card__body">
-            <span class="product-card__tag">engineering · carbon · ETH</span>
-            <h3>Swissloop <span class="arr">↗</span></h3>
-            <p>An award-winning, high-speed Hyperloop pod featuring custom linear induction motors and a lightweight carbon structure developed at ETH Zurich.</p>
-          </div>
-        </a>
-
-        <a class="product-card card" href="lightlock.html" data-reveal>
-          <div class="product-card__media">
-            <img src="assets/img/Kurbel_knick_hinten.jpg" alt="Light-Lock — bicycle pedal with integrated light and lock" loading="lazy" width="600" height="600">
-          </div>
-          <div class="product-card__body">
-            <span class="product-card__tag">mobility · safety · mechanism</span>
-            <h3>Light-Lock <span class="arr">↗</span></h3>
-            <p>A hybrid bicycle pedal that seamlessly integrates safety lighting and a mechanical anti-theft locking mechanism into a single, streamlined component.</p>
-          </div>
-        </a>
-
-        <a class="product-card card" href="snapball.html" data-reveal>
-          <div class="product-card__media">
-            <img src="assets/img/Snapball_7_.jpg" alt="SnapBall — modular magnetic 3D-printed football" loading="lazy" width="600" height="600">
-          </div>
-          <div class="product-card__body">
-            <span class="product-card__tag">3D print · magnets · play</span>
-            <h3>SnapBall <span class="arr">↗</span></h3>
-            <p>A modular, 3D-printed football that utilizes integrated magnets to function as an interactive puzzle, a tactile fidget toy, or a minimalist design object.</p>
-          </div>
-        </a>
-      </div>
-    </section>
-
     <!-- ================= SOCIAL ================= -->
     <section class="social" id="social">
       <div class="wrap sec-head">
@@ -292,12 +280,12 @@
       </div>
 
       <div class="ticker ticker--navy" aria-hidden="true">
-        <div class="ticker__track" style="--ticker-speed: 30s;">
+        <div class="ticker__track" style="--ticker-speed: 42s;">
           <div class="ticker__inner">
-            <span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span>
+            <span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span><span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span><span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span>
           </div>
           <div class="ticker__inner">
-            <span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span>
+            <span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span><span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span><span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span>
           </div>
         </div>
       </div>
@@ -419,6 +407,7 @@
             <span class="chip"><b>Graphic</b> Ps · Id · Ai</span>
             <span class="chip"><b>3D&amp;CAD</b> Blender · Solidworks · Fusion360 · Keyshot</span>
             <span class="chip"><b>PM</b> Notion · MS Office</span>
+            <span class="chip"><b>Ai/Coding</b> Python (basics) · Claude Code · Google AI Studio</span>
             <span class="chip"><b>Languages</b> DE (native) · EN (C1)</span>
             <span class="chip"><b>Cycling</b> hands-free</span>
           </div>
@@ -500,8 +489,24 @@
             <span class="logo-chip"><img src="assets/img/Wienerfestwochen_0.png" alt="Wiener Festwochen" loading="lazy"></span>
             <span class="logo-chip"><img src="assets/img/Logo_IKEA_Stiftung_Schweiz.png" alt="IKEA Stiftung Schweiz" loading="lazy"></span>
             <span class="logo-chip"><img src="assets/img/Unbenannt.png" alt="Partner" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/ETH_Z_rich_Logo_black.svg.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/logo-zhdk-large.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/MuseumFuerGestaltungZuerich_1600x800.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/Swissloop_Logo.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/1280px-Logo_Empa.svg.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/Wienerfestwochen_0.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/Logo_IKEA_Stiftung_Schweiz.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/Unbenannt.png" alt="" loading="lazy"></span>
           </div>
           <div class="logo-ticker__inner" aria-hidden="true">
+            <span class="logo-chip"><img src="assets/img/ETH_Z_rich_Logo_black.svg.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/logo-zhdk-large.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/MuseumFuerGestaltungZuerich_1600x800.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/Swissloop_Logo.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/1280px-Logo_Empa.svg.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/Wienerfestwochen_0.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/Logo_IKEA_Stiftung_Schweiz.png" alt="" loading="lazy"></span>
+            <span class="logo-chip"><img src="assets/img/Unbenannt.png" alt="" loading="lazy"></span>
             <span class="logo-chip"><img src="assets/img/ETH_Z_rich_Logo_black.svg.png" alt="" loading="lazy"></span>
             <span class="logo-chip"><img src="assets/img/logo-zhdk-large.png" alt="" loading="lazy"></span>
             <span class="logo-chip"><img src="assets/img/MuseumFuerGestaltungZuerich_1600x800.png" alt="" loading="lazy"></span>
@@ -565,37 +570,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
-  <script src="js/main.js?v=7"></script>
+  <script src="js/main.js?v=14"></script>
 </body>
 </html>
-
-<!-- In deiner index.html stehen deine Elemente so: -->
-<h1 id="main-title">Lädt...</h1>
-<p id="main-text">Lädt...</p>
-<img id="main-foto" src="" alt="Projektbild" />
-
-<!-- Und ganz unten, kurz vor </body>, fügst du das ein: -->
-<script>
-  fetch('/content.json')
-    .then(response => response.json())
-    .then(data => {
-      document.getElementById('main-title').innerText = data.titel;
-      document.getElementById('main-text').innerText = data.beschreibung;
-      if(data.foto) {
-        document.getElementById('main-foto').src = data.foto;
-      }
-    });
-</script>
-<!-- Netlify Identity Widget für den Passwort-Link -->
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => {
-          document.location.href = "/admin/";
-        });
-      }
-    });
-  }
-</script>

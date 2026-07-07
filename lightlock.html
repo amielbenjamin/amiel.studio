@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700;900&family=Epilogue:ital,wght@0,400;0,500;0,700;1,400&family=Droid+Sans+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=10">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23ff80cb'/%3E%3Ctext x='50' y='66' font-size='52' text-anchor='middle' font-family='sans-serif' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -21,27 +21,16 @@
         BENJAMIN&nbsp;AMIEL
       </a>
       <ul class="nav-links">
-        <li><a href="index.html#work">work</a></li>
         <li><a href="index.html#product">product</a></li>
+        <li><a href="index.html#experience">experience</a></li>
         <li><a href="index.html#social">social</a></li>
         <li><a href="index.html#photography">photography</a></li>
         <li><a href="index.html#about">about</a></li>
       </ul>
-      <a class="nav-cta" href="https://amiel.studio/s/CV_Amiel.pdf" target="_blank" rel="noopener">CV ↓</a>
-      <button class="nav-burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
-        <span></span><span></span><span></span>
-      </button>
+      <button class="lang-toggle" id="langToggle" type="button" aria-label="Deutsch / English" aria-pressed="false">DE</button>
+      <button class="nav-cube" id="cubeNav" type="button" aria-label="Open cube navigator" aria-haspopup="dialog" aria-expanded="false" hidden></button>
     </nav>
   </header>
-
-  <div class="mobile-menu" id="mobileMenu">
-    <a href="index.html#work">work</a>
-    <a href="index.html#product">product</a>
-    <a href="index.html#social">social</a>
-    <a href="index.html#photography">photography</a>
-    <a href="index.html#about">about</a>
-    <a href="https://amiel.studio/s/CV_Amiel.pdf" target="_blank" rel="noopener">CV ↓</a>
-  </div>
 
   <main id="main">
     <section class="proj-hero proj-hero--white">
@@ -59,10 +48,10 @@
     </section>
 
     <section class="proj-lead">
-      <div class="wrap proj-lead__grid">
+      <div class="wrap proj-lead__flow">
+      <p class="lead" data-reveal>In the dense urban environments of Switzerland, the bicycle is an indispensable tool for mobility—yet theft and poor visibility remain constant challenges. LightLock addresses these issues by fundamentally rethinking the bicycle pedal as a multi-functional safety device.</p>
       <div class="print" style="--tilt:-1.6deg;" data-reveal><img src="assets/img/nici_2_.jpg" alt="Light-Lock — lead image"></div>
         <div class="proj-copy" data-reveal>
-        <p class="lead">In the dense urban environments of Switzerland, the bicycle is an indispensable tool for mobility—yet theft and poor visibility remain constant challenges. LightLock addresses these issues by fundamentally rethinking the bicycle pedal as a multi-functional safety device.</p>
         <p><strong>Dynamic Visibility.</strong> While riding, the integrated LEDs project a red cone of light onto the ground. This light area moves dynamically with the pedaling motion, significantly increasing the cyclist's visual footprint and safety in traffic.</p>
         <p><strong>Integrated Security.</strong> When the bike is stationary, the pedal serves as a primary lock. The angled arm is rotated between the wheel spokes and secured, locking the drivetrain and the lighting system simultaneously.</p>
         <p><strong>Engineering &amp; Development.</strong> Created in 2019 in collaboration with Nicola Borrer, the project focused on the radical optimization of essential bike parts.</p>
@@ -72,22 +61,22 @@
     </section>
 
     <section class="proj-gallery">
-      <div class="wrap photo-cols">
-        <div class="photo-col" data-speed="1">
-          <figure class="print" style="--tilt:-1.6deg;"><img src="assets/img/Kurbel_knick_hinten.jpg" alt="Light-Lock — project image 1" loading="lazy"></figure>
-          <figure class="print" style="--tilt:1.3deg;"><img src="assets/img/numero_uno.237.jpg" alt="Light-Lock — project image 2" loading="lazy"></figure>
-          <figure class="print" style="--tilt:-.9deg;"><img src="assets/img/verbindung.241.jpg" alt="Light-Lock — project image 3" loading="lazy"></figure>
-          <figure class="print" style="--tilt:1.8deg;"><img src="assets/img/LIGHTLOCK_explosion.png" alt="Light-Lock — project image 4" loading="lazy"></figure>
+      <div class="wrap photo-carousel">
+        <div class="photo-carousel__track" tabindex="0" aria-label="Light-Lock gallery — scroll horizontally or use arrow keys">
+          <figure class="print" style="--tilt:-1.6deg;"><img src="assets/img/Kurbel_knick_hinten.jpg" alt="Light-Lock — project image 1 of 10" loading="lazy" decoding="async"></figure>
+          <figure class="print" style="--tilt:1.3deg;"><img src="assets/img/numero_uno.237.jpg" alt="Light-Lock — project image 2 of 10" loading="lazy" decoding="async"></figure>
+          <figure class="print" style="--tilt:-.9deg;"><img src="assets/img/verbindung.241.jpg" alt="Light-Lock — project image 3 of 10" loading="lazy" decoding="async"></figure>
+          <figure class="print" style="--tilt:1.8deg;"><img src="assets/img/LIGHTLOCK_explosion.png" alt="Light-Lock — project image 4 of 10" loading="lazy" decoding="async"></figure>
+          <figure class="print" style="--tilt:-1.2deg;"><img src="assets/img/light_lock.249.jpg" alt="Light-Lock — project image 5 of 10" loading="lazy" decoding="async"></figure>
+          <figure class="print" style="--tilt:.8deg;"><img src="assets/img/zusammen_vor.251.jpg" alt="Light-Lock — project image 6 of 10" loading="lazy" decoding="async"></figure>
+          <figure class="print" style="--tilt:-1.6deg;"><img src="assets/img/verbindung.oben.jpg" alt="Light-Lock — project image 7 of 10" loading="lazy" decoding="async"></figure>
+          <figure class="print" style="--tilt:1.3deg;"><img src="assets/img/Velo_focus.248.jpg" alt="Light-Lock — project image 8 of 10" loading="lazy" decoding="async"></figure>
+          <figure class="print" style="--tilt:-.9deg;"><img src="assets/img/kurbel_hinten.240.jpg" alt="Light-Lock — project image 9 of 10" loading="lazy" decoding="async"></figure>
+          <figure class="print" style="--tilt:1.8deg;"><img src="assets/img/zusammen_or.jpg" alt="Light-Lock — project image 10 of 10" loading="lazy" decoding="async"></figure>
         </div>
-        <div class="photo-col" data-speed="1.15">
-          <figure class="print" style="--tilt:-1.2deg;"><img src="assets/img/light_lock.249.jpg" alt="Light-Lock — project image 5" loading="lazy"></figure>
-          <figure class="print" style="--tilt:.8deg;"><img src="assets/img/zusammen_vor.251.jpg" alt="Light-Lock — project image 6" loading="lazy"></figure>
-          <figure class="print" style="--tilt:-1.6deg;"><img src="assets/img/verbindung.oben.jpg" alt="Light-Lock — project image 7" loading="lazy"></figure>
-        </div>
-        <div class="photo-col" data-speed="0.9">
-          <figure class="print" style="--tilt:1.3deg;"><img src="assets/img/Velo_focus.248.jpg" alt="Light-Lock — project image 8" loading="lazy"></figure>
-          <figure class="print" style="--tilt:-.9deg;"><img src="assets/img/kurbel_hinten.240.jpg" alt="Light-Lock — project image 9" loading="lazy"></figure>
-          <figure class="print" style="--tilt:1.8deg;"><img src="assets/img/zusammen_or.jpg" alt="Light-Lock — project image 10" loading="lazy"></figure>
+        <div class="photo-carousel__nav">
+          <button class="carousel-btn carousel-btn--prev" type="button" aria-label="Previous image">←</button>
+          <button class="carousel-btn carousel-btn--next" type="button" aria-label="Next image">→</button>
         </div>
       </div>
     </section>
@@ -113,6 +102,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
-  <script src="js/main.js?v=4"></script>
+  <script src="js/main.js?v=14"></script>
 </body>
 </html>
