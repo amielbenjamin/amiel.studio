@@ -3,578 +3,409 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Benjamin Amiel — Interdisciplinary Designer &amp; Project Lead</title>
-  <meta name="description" content="AMIEL.STUDIO — interdisciplinary design and project leadership. 3D design &amp; engineering, social design strategy and cultural project management between Wien and St. Gallen.">
+  <title>Benjamin Amiel — AMIEL.STUDIO</title>
+  <meta name="description" content="Benjamin Amiel — interdisciplinary designer & project lead. Choose your view: bold (Die-Cut Studio) or clean (Quiet Editorial).">
+  <meta property="og:title" content="Benjamin Amiel — AMIEL.STUDIO">
+  <meta property="og:description" content="Interdisciplinary designer & project lead. Two ways in — bold or clean.">
+  <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700;900&family=Epilogue:ital,wght@0,400;0,500;0,700;1,400&family=Droid+Sans+Mono&display=swap" rel="stylesheet">
-  <script>(function(){var t="bold";try{var m=location.search.match(/[?&]theme=(clean|bold)/);t=m?m[1]:(localStorage.getItem("amiel-theme")||"bold");if(m)localStorage.setItem("amiel-theme",t)}catch(e){}document.documentElement.setAttribute("data-theme",t)})();</script>
-  <link rel="stylesheet" href="css/style.css?v=18">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23ff80cb'/%3E%3Ctext x='50' y='66' font-size='52' text-anchor='middle' font-family='sans-serif' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='50' height='100' fill='%230b0b0b'/%3E%3Crect x='50' width='50' height='100' fill='%23F4F4F5'/%3E%3C/svg%3E">
+
+  <!-- Isolated prototype: self-contained styles + script. Token VALUES mirror the
+       real system (pink #ff80cb, ink, clean off-white #F4F4F5 / #1A1A1A) so it reads
+       correct standalone. Once approved, this gets folded onto the shared system. -->
+  <style>
+    :root {
+      --pink: #ff80cb;
+      --pink-deep: #ee43a4;
+      --bold-bg: #0b0b0b;
+      --clean-paper: #F4F4F5;
+      --clean-ink: #1A1A1A;
+      --split: 50vw;                 /* driven live by JS (px) */
+      --font-display: "Unbounded", system-ui, sans-serif;
+      --font-body: "Epilogue", system-ui, sans-serif;
+      --font-mono: "Droid Sans Mono", "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bold-bg);
+      overflow: hidden;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .lp-stage { position: fixed; inset: 0; }
+
+    /* ---- the two halves. Both cover the viewport; clip-path splits them at
+         --split, so the dither canvas never needs to resize when the split moves.
+         clip-path also clips hit-testing, so each half only reacts on its own side. ---- */
+    .lp-panel { position: fixed; inset: 0; cursor: pointer; overflow: hidden; }
+    .lp-bold  { background: var(--bold-bg);    clip-path: inset(0 calc(100% - var(--split)) 0 0); }
+    .lp-clean { background: var(--clean-paper); clip-path: inset(0 0 0 var(--split)); }
+
+    .lp-dither { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+    /* clean gooey field */
+    .lp-goo { position: absolute; inset: 0; filter: url(#lp-goo); pointer-events: none; }
+    .lp-blob-follow { position: absolute; top: 0; left: 0; will-change: transform; }
+    .lp-blob {
+      position: absolute; border-radius: 50%; will-change: transform;
+      transform: translate(-50%, -50%);
+    }
+    .lp-blob--1 { width: 40vmin; height: 40vmin; left: 68vw; top: 42vh; background: #E4E4E7; }
+    .lp-blob--2 { width: 32vmin; height: 32vmin; left: 82vw; top: 60vh; background: #D2D2D7; }
+    .lp-blob--3 { width: 26vmin; height: 26vmin; left: 74vw; top: 30vh; background: #F8CDE6; } /* the single muted accent */
+
+    /* dimming veils — the non-hovered half sits back, quiet */
+    .lp-veil { position: absolute; inset: 0; pointer-events: none; opacity: .3; }
+    .lp-veil--bold  { background: var(--bold-bg); }
+    .lp-veil--clean { background: var(--clean-paper); }
+
+    /* per-side labels */
+    .lp-label { position: absolute; pointer-events: none; z-index: 4; }
+    .lp-label--bold {
+      left: clamp(1.5rem, 4vw, 4rem); bottom: clamp(1.5rem, 5vh, 3rem);
+      font-family: var(--font-display); font-weight: 900; font-size: clamp(1.6rem, 4vw, 3rem);
+      letter-spacing: .01em; color: var(--pink); text-transform: uppercase; line-height: .95;
+      text-shadow: 3px 3px 0 #000; transform-origin: left bottom;
+    }
+    .lp-label--bold small {
+      display: block; font-family: var(--font-mono); font-size: .8rem; font-weight: 400;
+      letter-spacing: .18em; color: #fff; opacity: .7; margin-top: .5rem; text-shadow: none;
+    }
+    .lp-label--clean {
+      right: clamp(1.5rem, 4vw, 4rem); bottom: clamp(1.5rem, 5vh, 3rem); text-align: right;
+      font-family: var(--font-body); font-weight: 500; font-size: clamp(1.4rem, 3.2vw, 2.4rem);
+      letter-spacing: -.01em; color: var(--clean-ink); line-height: 1;
+    }
+    .lp-label--clean small {
+      display: block; font-family: var(--font-mono); font-size: .74rem; font-weight: 400;
+      letter-spacing: .12em; opacity: .55; margin-top: .55rem; text-transform: uppercase;
+    }
+
+    /* ---- shared centred title: two identical copies, each clipped to its half,
+         so the wordmark reads white on the dark side and ink on the light side,
+         splitting exactly on the divider. Same font both copies → seamless. ---- */
+    .lp-titles { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+    .lp-title {
+      position: fixed; inset: 0; display: grid; place-content: center; text-align: center;
+      padding: 1rem;
+    }
+    .lp-title.is-bold  { clip-path: inset(0 calc(100% - var(--split)) 0 0); }
+    .lp-title.is-clean { clip-path: inset(0 0 0 var(--split)); }
+    .lp-eyebrow {
+      font-family: var(--font-mono); font-size: clamp(.7rem, 1.4vw, .85rem);
+      letter-spacing: .32em; text-transform: uppercase; opacity: .7; margin-bottom: 1.1rem;
+    }
+    .lp-name {
+      font-family: var(--font-body); font-weight: 700;
+      font-size: clamp(2.2rem, 8vw, 6rem); letter-spacing: -.03em; line-height: .95;
+    }
+    .lp-choose {
+      font-family: var(--font-mono); font-size: clamp(.7rem, 1.5vw, .9rem);
+      letter-spacing: .1em; margin-top: 1.4rem; opacity: .6;
+    }
+    .is-bold  .lp-eyebrow, .is-bold  .lp-name, .is-bold  .lp-choose { color: #fff; }
+    .is-clean .lp-eyebrow, .is-clean .lp-name, .is-clean .lp-choose { color: var(--clean-ink); }
+
+    /* the moving divider */
+    .lp-divider {
+      position: fixed; top: 0; bottom: 0; left: var(--split); width: 2px; z-index: 6;
+      transform: translateX(-1px); pointer-events: none;
+      background: linear-gradient(180deg, transparent, rgba(255,128,203,.9) 20%, rgba(255,128,203,.9) 80%, transparent);
+      mix-blend-mode: difference;
+    }
+
+    /* prototype ribbon */
+    .lp-ribbon {
+      position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 8;
+      font-family: var(--font-mono); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase;
+      background: #000; color: #fff; padding: .4rem .9rem; border-radius: 999px; opacity: .55;
+      pointer-events: none; mix-blend-mode: difference;
+    }
+
+    .lp-defs { position: absolute; width: 0; height: 0; }
+
+    :focus-visible { outline: 3px solid var(--pink); outline-offset: -6px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lp-divider { transition: none; }
+    }
+  </style>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to content</a>
 
-  <header class="site-header">
-    <nav class="nav-pill" aria-label="Main">
-      <a class="brand" href="#top">
-        <svg class="spark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></svg>
-        BENJAMIN&nbsp;AMIEL
-      </a>
-      <ul class="nav-links">
-        <li><a href="#experience">experience</a></li>
-        <li><a href="#product">product</a></li>
-        <li><a href="#social">social</a></li>
-        <li><a href="#photography">photography</a></li>
-        <li><a href="#about">about</a></li>
-      </ul>
-      <button class="lang-toggle" id="langToggle" type="button" aria-label="Deutsch / English" aria-pressed="false">DE</button>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme" aria-pressed="false">BOLD</button>
-      <button class="nav-cube" id="cubeNav" type="button" aria-label="Open cube navigator" aria-haspopup="dialog" aria-expanded="false" hidden></button>
-    </nav>
-  </header>
+  <!-- gooey filter -->
+  <svg class="lp-defs" aria-hidden="true">
+    <defs>
+      <filter id="lp-goo">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="blur"/>
+        <feColorMatrix in="blur" mode="matrix"
+          values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 16 -6" result="goo"/>
+        <feGaussianBlur in="goo" stdDeviation="4"/>
+      </filter>
+    </defs>
+  </svg>
 
-  <main id="main">
+  <div class="lp-stage" id="stage">
 
-    <!-- ================= HERO ================= -->
-    <section class="hero" id="top">
-      <div class="wrap hero__grid">
-        <div class="hero__copy">
-          <span class="hero__kicker" aria-hidden="true" data-reveal><i>(01)</i> Intro</span>
-          <span class="chip hero__eyebrow" data-reveal>✳ Wien · Zurich — open for projects</span>
-          <h1 class="hero__title">
-            <span class="row" data-reveal>Benjamin</span>
-            <span class="row row--accent" data-reveal>Amiel</span>
-          </h1>
-          <p class="hero__sub" data-reveal>
-            <span class="hero__lede">Interdisciplinary <span class="hl">designer</span> &amp; <span class="hl">project lead</span></span>
-            <span class="hero__deck">— turning technical precision and social dynamics into products, spaces and cultural moments.</span>
-          </p>
-          <div class="hero__actions" data-reveal>
-            <a class="btn btn--pink" href="#product">see the work <span class="arr">→</span></a>
-            <a class="btn" href="#contact">say hi <span class="arr">→</span></a>
-          </div>
-          <!-- clean-theme stand-in for the arcade GIF; hidden in bold via CSS -->
-          <p class="hero__keywords" data-reveal>#PRODUCTDESIGNER <b>·</b> #PROBLEMSOLVER <b>·</b> #MAKER</p>
-        </div>
-
-        <div class="hero__stack" aria-hidden="false">
-          <div class="hero__arcade" data-reveal data-parallax="-6">
-            <img src="assets/img/arcade_hero_typography2.gif" alt="Animated arcade-style typography: #productdesigner #problemsolver #maker" width="800" height="450">
-          </div>
-          <img class="hero__portrait sticker" src="assets/img/Portrait_linkedin_Kopie.png"
-               alt="Portrait of Benjamin Amiel" width="640" height="700" data-reveal data-parallax="6">
-          <span class="hero__badge hero__badge--b" data-reveal>#masterofdisaster</span>
-        </div>
-      </div>
-
-      <div class="ticker ticker--flat hero__ticker" aria-hidden="true">
-        <div class="ticker__track" style="--ticker-speed: 48s;">
-          <div class="ticker__inner">
-            <span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span><span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span><span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span>
-          </div>
-          <div class="ticker__inner">
-            <span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span><span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span><span>#productdesigner</span><span>#problemsolver</span><span>#maker</span><span>#creativelevel</span><span>#projectlead</span><span>#socialdesign</span>
-          </div>
-        </div>
+    <!-- LEFT · BOLD -->
+    <section class="lp-panel lp-bold" id="boldPanel" role="button" tabindex="0"
+             aria-label="Enter the bold experience">
+      <canvas class="lp-dither" id="dither"></canvas>
+      <div class="lp-veil lp-veil--bold" id="veilBold"></div>
+      <div class="lp-label lp-label--bold" id="labelBold">
+        #BOLD
+        <small>die-cut studio</small>
       </div>
     </section>
 
-    <!-- ================= INTRO / SERVICES ================= -->
-    <section class="intro">
-      <div class="wrap">
-        <p class="intro__statement" data-reveal>
-          I help organizations <strong class="hl">visualize innovation</strong> and execute
-          <strong>complex cultural projects</strong> — combining technical precision with a deep
-          understanding of <strong class="hl">social dynamics</strong>.
-        </p>
-
-        <div class="services">
-          <article class="service card" data-reveal>
-            <svg class="service__glyph" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-              <path d="M24 4l17 10v20L24 44 7 34V14z"/><path d="M24 4v20m0 0L7 14m17 10l17-10" />
-            </svg>
-            <h3>3D Design &amp; Engineering</h3>
-            <p>Professional product development — from first sketch to production-ready CAD and photoreal rendering.</p>
-            <p class="service__tools">Fusion360 · Solidworks · Blender</p>
-          </article>
-
-          <article class="service card" data-reveal>
-            <svg class="service__glyph" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-              <circle cx="16" cy="18" r="7"/><circle cx="32" cy="18" r="7"/><path d="M6 42c2-8 7-12 10-12s8 4 10 12M28 30c3 0 8 4 10 12" opacity=".9"/>
-            </svg>
-            <h3>Social Design Strategy</h3>
-            <p>Community-driven projects at the intersection of art and urban life — designed with people, not just for them.</p>
-            <p class="service__tools">Participation · Curation · Research</p>
-          </article>
-
-          <article class="service card" data-reveal>
-            <svg class="service__glyph" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-              <rect x="6" y="10" width="36" height="30" rx="4"/><path d="M6 20h36M16 10V4m16 6V4M14 28h8m-8 6h14"/>
-            </svg>
-            <h3>Project Management</h3>
-            <p>Budgets, stakeholders and interdisciplinary teams — carried from first vision to public launch.</p>
-            <p class="service__tools">Fundings · Stakeholders · Launch</p>
-          </article>
-        </div>
+    <!-- RIGHT · CLEAN -->
+    <section class="lp-panel lp-clean" id="cleanPanel" role="button" tabindex="0"
+             aria-label="Enter the clean experience">
+      <div class="lp-goo" id="goo">
+        <div class="lp-blob-follow" data-ox="-40" data-oy="10"><div class="lp-blob lp-blob--1"></div></div>
+        <div class="lp-blob-follow" data-ox="70"  data-oy="60"><div class="lp-blob lp-blob--2"></div></div>
+        <div class="lp-blob-follow" data-ox="20"  data-oy="-50"><div class="lp-blob lp-blob--3"></div></div>
+      </div>
+      <div class="lp-veil lp-veil--clean" id="veilClean"></div>
+      <div class="lp-label lp-label--clean" id="labelClean">
+        clean
+        <small>quiet editorial</small>
       </div>
     </section>
 
-    <!-- ================= WORK / EXPERIENCE ================= -->
-    <section class="work" id="experience">
-      <div class="wrap sec-head">
-        <span class="sec-index">( 01 )</span>
-        <h2 class="sec-title" data-reveal>experience</h2>
-        <p class="sec-note" data-reveal>Curated events, installations and collective experiments — the master-of-disaster department.</p>
-      </div>
-
-      <div class="ticker" aria-hidden="true">
-        <div class="ticker__track" style="--ticker-speed: 42s;">
-          <div class="ticker__inner">
-            <span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span><span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span><span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span>
-          </div>
-          <div class="ticker__inner">
-            <span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span><span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span><span>#event</span><span>#curation</span><span>#art</span><span>#master of disaster</span><span>#festival</span><span>#speculative</span><span>#exhibition</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="wrap work-rows">
-        <article class="work-row" data-reveal>
-          <a class="work-row__media" href="love-fight-club.html" aria-label="Open project: Love Fight Club">
-            <span class="work-row__num">LFC — 01</span>
-            <div class="print" style="--tilt:-2.2deg;">
-              <img src="assets/img/_MG_0526.jpg" alt="Love Fight Club — performers in a curated physical arena" loading="lazy" width="800" height="600">
-            </div>
-          </a>
-          <div class="work-row__body">
-            <div class="work-row__tags">
-              <span class="chip">#event</span><span class="chip">#curation</span><span class="chip">#scenography</span>
-            </div>
-            <h3>Love Fight Club</h3>
-            <p>A curated social and physical arena that utilizes physical training and artistic performance to explore radical proximity, vulnerability, and the boundaries of consent.</p>
-            <a class="btn" href="love-fight-club.html">view project <span class="arr">→</span></a>
-          </div>
-        </article>
-
-        <article class="work-row" data-reveal>
-          <a class="work-row__media" href="kleiderbad.html" aria-label="Open project: Kleiderbad">
-            <span class="work-row__num">KLB — 02</span>
-            <div class="print" style="--tilt:1.8deg;">
-              <img src="assets/img/Kleiderbad_22_.jpg" alt="Kleiderbad — installation bathtub filled with garments" loading="lazy" width="800" height="600">
-            </div>
-          </a>
-          <div class="work-row__body">
-            <div class="work-row__tags">
-              <span class="chip">#installation</span><span class="chip">#fashion</span><span class="chip">#critical design</span>
-            </div>
-            <h3>Kleiderbad</h3>
-            <p>A critical design installation that uses the aesthetic of a public bath to confront users with the impact of the global fashion industry and promote reflection on individual consumption habits.</p>
-            <a class="btn" href="kleiderbad.html">view project <span class="arr">→</span></a>
-          </div>
-        </article>
-
-        <article class="work-row" data-reveal>
-          <a class="work-row__media" href="1210.html" aria-label="Open project: 1210 Pop-Up">
-            <span class="work-row__num">1210 — 03</span>
-            <div class="print" style="--tilt:-1.6deg;">
-              <img src="assets/img/1210popup_7_.jpg" alt="1210 Pop-Up — multimedia exhibition space in Floridsdorf" loading="lazy" width="800" height="600">
-            </div>
-          </a>
-          <div class="work-row__body">
-            <div class="work-row__tags">
-              <span class="chip">#exhibition</span><span class="chip">#football</span><span class="chip">#music</span>
-            </div>
-            <h3>1210 Pop-Up</h3>
-            <p>An immersive multimedia exhibition and event series that merges grassroots football culture with contemporary photography and live music performances in the heart of Floridsdorf.</p>
-            <a class="btn" href="1210.html">view project <span class="arr">→</span></a>
-          </div>
-        </article>
-
-        <article class="work-row" data-reveal>
-          <a class="work-row__media" href="slightly-studio.html" aria-label="Open project: Slightly Studio">
-            <span class="work-row__num">SLY — 04</span>
-            <div class="print" style="--tilt:2.4deg;">
-              <img src="assets/img/_DSC4158.jpg" alt="Slightly Studio — playful naïv-design objects" loading="lazy" width="800" height="600">
-            </div>
-          </a>
-          <div class="work-row__body">
-            <div class="work-row__tags">
-              <span class="chip">#collective</span><span class="chip">#naïv design</span><span class="chip">#humor</span>
-            </div>
-            <h3>Slightly Studio</h3>
-            <p>A design collective that challenges the perfectionism of a performance-driven society through "Naïv-Design," prioritizing intuition, humor, and the spontaneous joy of creation over rigid functionality.</p>
-            <a class="btn" href="slightly-studio.html">view project <span class="arr">→</span></a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- ================= PRODUCT ================= -->
-    <section class="product" id="product">
-      <div class="wrap sec-head">
-        <span class="sec-index">( 02 )</span>
-        <h2 class="sec-title" data-reveal>product</h2>
-        <p class="sec-note" data-reveal>Industrial design with an engineer's patience — modelled, rendered, prototyped, shipped.</p>
-      </div>
-
-      <div class="ticker ticker--pink ticker--reverse" aria-hidden="true">
-        <div class="ticker__track" style="--ticker-speed: 45s;">
-          <div class="ticker__inner">
-            <span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span><span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span><span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span>
-          </div>
-          <div class="ticker__inner">
-            <span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span><span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span><span>#industrial design</span><span>#product</span><span>#business</span><span>#rendering</span><span>#constructing</span><span>#UX design</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="wrap product-grid">
-        <a class="product-card card" href="random-3d.html" data-reveal>
-          <div class="product-card__media">
-            <img src="assets/img/random3d_8_.jpg" alt="random 3D — photorealistic product rendering" loading="lazy" width="600" height="600">
-          </div>
-          <div class="product-card__body">
-            <span class="product-card__tag">3D print · rendering · CAD</span>
-            <h3>random 3D <span class="arr">↗</span></h3>
-            <p>A versatile collection of 3D modeling and photorealistic rendering projects showcasing technical expertise in product and interior design.</p>
-          </div>
-        </a>
-
-        <a class="product-card card" href="swissloop.html" data-reveal>
-          <div class="product-card__media">
-            <img src="assets/img/Swissloop_2021_Top_Kopie_2.png" alt="Swissloop — hyperloop pod developed at ETH Zurich" loading="lazy" width="600" height="600">
-          </div>
-          <div class="product-card__body">
-            <span class="product-card__tag">engineering · carbon · ETH</span>
-            <h3>Swissloop <span class="arr">↗</span></h3>
-            <p>An award-winning, high-speed Hyperloop pod featuring custom linear induction motors and a lightweight carbon structure developed at ETH Zurich.</p>
-          </div>
-        </a>
-
-        <a class="product-card card" href="lightlock.html" data-reveal>
-          <div class="product-card__media">
-            <img src="assets/img/Kurbel_knick_hinten.jpg" alt="Light-Lock — bicycle pedal with integrated light and lock" loading="lazy" width="600" height="600">
-          </div>
-          <div class="product-card__body">
-            <span class="product-card__tag">mobility · safety · mechanism</span>
-            <h3>Light-Lock <span class="arr">↗</span></h3>
-            <p>A hybrid bicycle pedal that seamlessly integrates safety lighting and a mechanical anti-theft locking mechanism into a single, streamlined component.</p>
-          </div>
-        </a>
-
-        <a class="product-card card" href="snapball.html" data-reveal>
-          <div class="product-card__media">
-            <img src="assets/img/Snapball_7_.jpg" alt="SnapBall — modular magnetic 3D-printed football" loading="lazy" width="600" height="600">
-          </div>
-          <div class="product-card__body">
-            <span class="product-card__tag">3D print · magnets · play</span>
-            <h3>SnapBall <span class="arr">↗</span></h3>
-            <p>A modular, 3D-printed football that utilizes integrated magnets to function as an interactive puzzle, a tactile fidget toy, or a minimalist design object.</p>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <!-- ================= SOCIAL ================= -->
-    <section class="social" id="social">
-      <div class="wrap sec-head">
-        <span class="sec-index">( 03 )</span>
-        <h2 class="sec-title" data-reveal>social</h2>
-        <p class="sec-note" data-reveal>Design as a public tool — teaching, speculating and experimenting with communities.</p>
-      </div>
-
-      <div class="ticker ticker--navy" aria-hidden="true">
-        <div class="ticker__track" style="--ticker-speed: 42s;">
-          <div class="ticker__inner">
-            <span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span><span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span><span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span>
-          </div>
-          <div class="ticker__inner">
-            <span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span><span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span><span>#teaching</span><span>#speculative design</span><span>#Ai</span><span>#project lead</span><span>#experimenting</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="wrap collage">
-        <a class="collage-card collage-card--a" href="food-for-future-thoughts.html" data-reveal>
-          <span class="tape"></span>
-          <div class="card">
-            <div class="collage-card__media">
-              <img src="assets/img/braunbar5110_Future_restaurant_where_you_can_see_the_insects_an_aa378b56-4120-4195-af90-3bed79e317ae.jpg" alt="Food for Future Thoughts — speculative future restaurant" loading="lazy" width="800" height="500">
-            </div>
-            <div class="collage-card__body">
-              <h3>Food for Future Thoughts</h3>
-              <p>Speculative workshops and a "Farm to Fork" dinner exploring the food cultures of tomorrow — visions preserved as vacuum-sealed reflections.</p>
-            </div>
-          </div>
-        </a>
-
-        <a class="collage-card collage-card--b" href="verpackungverpackung.html" data-reveal>
-          <span class="tape"></span>
-          <div class="card">
-            <div class="collage-card__media">
-              <img src="assets/img/VerpackungVerpackung_10_.jpg" alt="Verpackung Verpackung — students analyzing product packaging" loading="lazy" width="800" height="500">
-            </div>
-            <div class="collage-card__body">
-              <h3>Verpackung Verpackung</h3>
-              <p>Empowering secondary-school students to critically analyze packaging through field research and AI-generated emotional imagery.</p>
-            </div>
-          </div>
-        </a>
-
-        <a class="collage-card collage-card--c" href="kickvote.html" data-reveal>
-          <span class="tape"></span>
-          <div class="card">
-            <div class="collage-card__media">
-              <img src="assets/img/_MG_0032.jpg" alt="Kick&Vote — football as democratic practice" loading="lazy" width="800" height="500">
-            </div>
-            <div class="collage-card__body">
-              <h3>Kick&amp;Vote</h3>
-              <p>Football as a "physical intervention" that lets young people practically experience and co-design democratic values and decision-making.</p>
-            </div>
-          </div>
-        </a>
-
-        <a class="collage-card collage-card--d" href="tex-brick.html" data-reveal>
-          <span class="tape"></span>
-          <div class="card">
-            <div class="collage-card__media">
-              <img src="assets/img/Kleiderbad_7_.jpg" alt="Tex-Brick — building blocks made from textile waste" loading="lazy" width="800" height="500">
-            </div>
-            <div class="collage-card__body">
-              <h3>Tex-Brick</h3>
-              <p>Material research that transforms synthetic textile waste into reusable building blocks against the ecological impact of clothing exports.</p>
-            </div>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <!-- ================= PHOTOGRAPHY ================= -->
-    <section class="photography" id="photography">
-      <div class="wrap sec-head">
-        <span class="sec-index">( 04 )</span>
-        <h2 class="sec-title" data-reveal>photography</h2>
-        <p class="sec-note" data-reveal>#portrait #product #art #master — prints from the studio darkroom.</p>
-      </div>
-
-      <div class="wrap photo-carousel">
-        <div class="photo-carousel__track" tabindex="0" aria-label="Photography gallery — scroll horizontally">
-          <figure class="print" style="--tilt:-1.4deg;"><img src="assets/img/photography_16_.jpg" alt="Photography by Benjamin Amiel — 16" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:1.5deg;"><img src="assets/img/photography_9_.jpg" alt="Photography by Benjamin Amiel — 9" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:-1.3deg;"><img src="assets/img/photography_10_.jpg" alt="Photography by Benjamin Amiel — 10" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:1.2deg;"><img src="assets/img/photography_12_.jpg" alt="Photography by Benjamin Amiel — 12" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:-1.1deg;"><img src="assets/img/photography_3_.jpg" alt="Photography by Benjamin Amiel — 3" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:1.4deg;"><img src="assets/img/photography_2_.jpg" alt="Photography by Benjamin Amiel — 2" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:-.8deg;"><img src="assets/img/photography_6_.jpg" alt="Photography by Benjamin Amiel — 6" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:.7deg;"><img src="assets/img/photography_8_.jpg" alt="Photography by Benjamin Amiel — 8" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:1.6deg;"><img src="assets/img/photography_18_.jpg" alt="Photography by Benjamin Amiel — 18" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:-1.9deg;"><img src="assets/img/photography_14_.jpg" alt="Photography by Benjamin Amiel — 14" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:-.9deg;"><img src="assets/img/photography_13_.jpg" alt="Photography by Benjamin Amiel — 13" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:-1.2deg;"><img src="assets/img/photography_5_.jpg" alt="Photography by Benjamin Amiel — 5" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:1.1deg;"><img src="assets/img/photography_4_.jpg" alt="Photography by Benjamin Amiel — 4" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:1.8deg;"><img src="assets/img/photography_17_.jpg" alt="Photography by Benjamin Amiel — 17" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:.9deg;"><img src="assets/img/photography_1_.jpg" alt="Photography by Benjamin Amiel — 1" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:-.6deg;"><img src="assets/img/photography_20_.jpg" alt="Photography by Benjamin Amiel — 20" loading="lazy" width="600" height="750"></figure>
-          <figure class="print" style="--tilt:-1.7deg;"><img src="assets/img/photography_19_.jpg" alt="Photography by Benjamin Amiel — 19" loading="lazy" width="600" height="750"></figure>
-        </div>
-        <div class="photo-carousel__nav">
-          <button class="carousel-btn carousel-btn--prev" type="button" aria-label="Previous photos">←</button>
-          <button class="carousel-btn carousel-btn--next" type="button" aria-label="Next photos">→</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= ABOUT ================= -->
-    <section class="about" id="about">
-      <div class="wrap sec-head">
-        <span class="sec-index">( 05 )</span>
-        <h2 class="sec-title" data-reveal>about</h2>
-        <p class="sec-note" data-reveal>#design #social #UX/UI #product #master #events #photography</p>
-      </div>
-
-      <div class="wrap about__cols">
-        <div class="about__portraits" data-reveal>
-          <img class="about__portrait about__portrait--a sticker" src="assets/img/Portrait_tuch.png" alt="Benjamin Amiel portrait with cloth" loading="lazy" width="600" height="750">
-          <img class="about__portrait about__portrait--b sticker" src="assets/img/Portrait_k_rper.png" alt="Benjamin Amiel full portrait" loading="lazy" width="600" height="750">
-        </div>
-
+    <!-- shared centred wordmark (two clipped copies) -->
+    <div class="lp-titles" aria-hidden="true">
+      <div class="lp-title is-bold">
         <div>
-          <p class="about__bio" data-reveal>
-            Interdisciplinary designer holding a <span class="hl">Master's degree</span> from the University
-            of Applied Arts Vienna and a <span class="hl">Bachelor's degree</span> from the Zurich University
-            of the Arts. Specialized in bridging the gap between technical product design (CAD/3D) and
-            socially impactful Social Design. Expert in leading complex projects at the intersection of
-            art, technology, and urban innovation.
-          </p>
-
-          <div class="skills" data-reveal>
-            <span class="chip"><b>Graphic</b> Ps · Id · Ai</span>
-            <span class="chip"><b>3D&amp;CAD</b> Blender · Solidworks · Fusion360 · Keyshot</span>
-            <span class="chip"><b>PM</b> Notion · MS Office</span>
-            <span class="chip"><b>Ai/Coding</b> Python (basics) · Claude Code · Google AI Studio</span>
-            <span class="chip"><b>Languages</b> DE (native) · EN (C1)</span>
-            <span class="chip"><b>Cycling</b> hands-free</span>
-          </div>
-
-          <div class="about__downloads" data-reveal>
-            <a class="btn btn--pink" href="https://amiel.studio/s/CV_Amiel.pdf" target="_blank" rel="noopener">download CV <span class="arr">↓</span></a>
-            <a class="btn" href="https://amiel.studio/s/Portfolio_Amiel-no.pdf" target="_blank" rel="noopener">download portfolio <span class="arr">↓</span></a>
-          </div>
+          <div class="lp-eyebrow">select an experience</div>
+          <div class="lp-name">BENJAMIN&nbsp;AMIEL</div>
+          <div class="lp-choose">← bold&nbsp;&nbsp;·&nbsp;&nbsp;clean →</div>
         </div>
       </div>
-
-      <div class="wrap">
-        <div class="cv-doc card" data-reveal>
-          <span class="cv-doc__label">CV — the paper trail</span>
-          <div class="cv-grid">
-            <div class="cv-col">
-              <h3>Education <span class="cv-count">2016 — 2025</span></h3>
-              <div class="cv-item">
-                <h4>MA Social Design — Arts as Urban Innovation</h4>
-                <p class="cv-meta">University of Applied Arts · Vienna · 2023 — 2025</p>
-                <p>Focus: systemic and participatory design.</p>
-              </div>
-              <div class="cv-item">
-                <h4>BA Industrial / Product Design</h4>
-                <p class="cv-meta">Zurich University of the Arts (ZHdK) · 2016 — 2020</p>
-                <p>Focus: product development, CAD design and manufacturing technology.</p>
-              </div>
-
-              <h3 style="margin-top:2.2rem;">Also true <span class="cv-count">further</span></h3>
-              <div class="cv-item">
-                <h4>Archives, graphics &amp; hospitality</h4>
-                <p>Architectural archivist, graphic design intern, professional photography — plus eight years of high-volume hosting at Plaza Bar Zurich and bar leadership at Vibez St. Gallen.</p>
-              </div>
-            </div>
-
-            <div class="cv-col">
-              <h3>Experience <span class="cv-count">selected</span></h3>
-              <div class="cv-item">
-                <h4>Project Manager — Kulturverein 1210</h4>
-                <p class="cv-meta">Vienna · 2025 — 2026</p>
-                <p>Directing interdisciplinary cultural projects; curation, event management and stakeholder communication; budgets and public grants incl. European Capital of Democracy Vienna.</p>
-              </div>
-              <div class="cv-item">
-                <h4>Project-Based Teaching — Museum für Gestaltung</h4>
-                <p class="cv-meta">Zurich · 2021 — 2022</p>
-                <p>Workshop design under the "Museumjung" framework; translating design theory into accessible, critical formats.</p>
-              </div>
-              <div class="cv-item">
-                <h4>Freelance Designer &amp; Co-Founder — slightly Studio</h4>
-                <p class="cv-meta">Zurich · 2019 — 2023</p>
-                <p>Studio leadership around "Naïv Design" and experimental products; grants acquired to sustain creative research.</p>
-              </div>
-              <div class="cv-item">
-                <h4>Industrial Designer — Swissloop</h4>
-                <p class="cv-meta">ETH Zurich · 2018 — 2019</p>
-                <p>Co-developed an innovative Hyperloop pod; multiple industry prizes at the European Hyperloop Week.</p>
-              </div>
-            </div>
-          </div>
+      <div class="lp-title is-clean">
+        <div>
+          <div class="lp-eyebrow">select an experience</div>
+          <div class="lp-name">BENJAMIN&nbsp;AMIEL</div>
+          <div class="lp-choose">← bold&nbsp;&nbsp;·&nbsp;&nbsp;clean →</div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- ================= COLLABORATIONS ================= -->
-    <section class="collabs">
-      <div class="wrap collabs__head">
-        <h2 data-reveal>collaborations &amp; fundings</h2>
-        <p data-reveal>the good company this work has kept</p>
-      </div>
-
-      <div class="logo-ticker" aria-label="Collaborations">
-        <div class="logo-ticker__track" style="--ticker-speed: 42s;">
-          <div class="logo-ticker__inner">
-            <span class="logo-chip"><img src="assets/img/ETH_Z_rich_Logo_black.svg.png" alt="ETH Zürich" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/logo-zhdk-large.png" alt="Zurich University of the Arts ZHdK" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/MuseumFuerGestaltungZuerich_1600x800.png" alt="Museum für Gestaltung Zürich" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Swissloop_Logo.png" alt="Swissloop" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/1280px-Logo_Empa.svg.png" alt="Empa" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Wienerfestwochen_0.png" alt="Wiener Festwochen" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Logo_IKEA_Stiftung_Schweiz.png" alt="IKEA Stiftung Schweiz" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Unbenannt.png" alt="Partner" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/ETH_Z_rich_Logo_black.svg.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/logo-zhdk-large.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/MuseumFuerGestaltungZuerich_1600x800.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Swissloop_Logo.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/1280px-Logo_Empa.svg.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Wienerfestwochen_0.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Logo_IKEA_Stiftung_Schweiz.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Unbenannt.png" alt="" loading="lazy"></span>
-          </div>
-          <div class="logo-ticker__inner" aria-hidden="true">
-            <span class="logo-chip"><img src="assets/img/ETH_Z_rich_Logo_black.svg.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/logo-zhdk-large.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/MuseumFuerGestaltungZuerich_1600x800.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Swissloop_Logo.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/1280px-Logo_Empa.svg.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Wienerfestwochen_0.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Logo_IKEA_Stiftung_Schweiz.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Unbenannt.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/ETH_Z_rich_Logo_black.svg.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/logo-zhdk-large.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/MuseumFuerGestaltungZuerich_1600x800.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Swissloop_Logo.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/1280px-Logo_Empa.svg.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Wienerfestwochen_0.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Logo_IKEA_Stiftung_Schweiz.png" alt="" loading="lazy"></span>
-            <span class="logo-chip"><img src="assets/img/Unbenannt.png" alt="" loading="lazy"></span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= FOOTER ================= -->
-    <footer class="site-footer" id="contact">
-      <div class="wrap">
-        <div class="footer__cta">
-          <span class="eyebrow" data-reveal>got a wild idea? a stage? a factory? ↓</span><br>
-          <a class="footer__mail" href="mailto:amiel.benjamin.c@gmail.com" data-reveal>
-            <span class="u">amiel.benjamin.c<wbr>@gmail.com</span>
-          </a>
-        </div>
-
-        <div class="footer__cols">
-          <div class="footer__brand">
-            BENJAMIN AMIEL
-            <p>Interdisciplinary designer &amp; project lead — between the workshop, the museum and the football pitch.</p>
-          </div>
-          <div class="footer__col">
-            <h4>location</h4>
-            <ul>
-              <li>Wien, Austria</li>
-              <li>St. Gallen, Switzerland</li>
-            </ul>
-          </div>
-          <div class="footer__col">
-            <h4>contact</h4>
-            <ul>
-              <li><a href="mailto:amiel.benjamin.c@gmail.com">amiel.benjamin.c@gmail.com</a></li>
-              <li><a href="tel:+41796333239">+41 79 633 32 39</a></li>
-              <li><a href="tel:+4368181158632">+43 681 81158632</a></li>
-            </ul>
-          </div>
-          <div class="footer__col">
-            <h4>downloads</h4>
-            <ul>
-              <li><a href="https://amiel.studio/s/CV_Amiel.pdf" target="_blank" rel="noopener">CV (EN)</a></li>
-              <li><a href="https://amiel.studio/s/CV_Amiel_C.pdf" target="_blank" rel="noopener">CV (DE)</a></li>
-              <li><a href="https://amiel.studio/s/Portfolio_Amiel-no.pdf" target="_blank" rel="noopener">Portfolio</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="footer__bottom">
-          <span>© 2026 Benjamin Amiel — AMIEL.STUDIO</span>
-          <span>made with care, tape &amp; hot pink</span>
-        </div>
-      </div>
-    </footer>
-  </main>
+    <div class="lp-divider" id="divider"></div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
-  <script src="js/main.js?v=18"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    var root       = document.documentElement;
+    var stage      = document.getElementById("stage");
+    var canvas     = document.getElementById("dither");
+    var ctx        = canvas.getContext("2d");
+    var veilBold   = document.getElementById("veilBold");
+    var veilClean  = document.getElementById("veilClean");
+    var labelBold  = document.getElementById("labelBold");
+    var labelClean = document.getElementById("labelClean");
+    var boldPanel  = document.getElementById("boldPanel");
+    var cleanPanel = document.getElementById("cleanPanel");
+    var follows    = Array.prototype.slice.call(document.querySelectorAll(".lp-blob-follow"));
+
+    var hasGSAP = typeof gsap !== "undefined";
+    var reduce  = window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+                  /[?&]noanim/.test(location.search);
+
+    /* ---------- 8×8 Bayer ordered-dither matrix ---------- */
+    var BAYER = [
+      [ 0,32, 8,40, 2,34,10,42],
+      [48,16,56,24,50,18,58,26],
+      [12,44, 4,36,14,46, 6,38],
+      [60,28,52,20,62,30,54,22],
+      [ 3,35,11,43, 1,33, 9,41],
+      [51,19,59,27,49,17,57,25],
+      [15,47, 7,39,13,45, 5,37],
+      [63,31,55,23,61,29,53,21]
+    ];
+    var CELL = 7;          // dither pixel size
+    var AMBIENT = 0.05;    // faint texture even when idle
+    var PINK = "#ff80cb";
+
+    /* ---------- live state ---------- */
+    var W = window.innerWidth, H = window.innerHeight;
+    var cols = 0, rows = 0;
+    var mx = W / 2, my = H / 2;          // pointer
+    var inside = false;                  // pointer over the stage
+    var boldActive = false, cleanActive = false;
+
+    var splitCur = W / 2, splitTarget = W / 2;   // divider x (px), lerped
+    var intCur = 0, intTarget = 0;               // dither reveal intensity, lerped
+
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W; canvas.height = H;
+      ctx.imageSmoothingEnabled = false;
+      cols = Math.ceil(W / CELL); rows = Math.ceil(H / CELL);
+      if (!inside) { splitTarget = splitCur = W / 2; }
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    /* ---------- divider setter (GSAP-eased when available) ---------- */
+    var setSplit = hasGSAP
+      ? gsap.quickTo({ v: splitCur }, "v", {
+          duration: 0.4, ease: "power3.out",
+          onUpdate: function () { root.style.setProperty("--split", this.targets()[0].v + "px"); }
+        })
+      : function (v) { splitCur = v; root.style.setProperty("--split", v + "px"); };
+
+    /* ---------- veils / labels ---------- */
+    function paintState() {
+      var boldVeil  = boldActive  ? 0 : (inside ? 0.6 : 0.32);
+      var cleanVeil = cleanActive ? 0 : (inside ? 0.6 : 0.32);
+      if (hasGSAP) {
+        gsap.to(veilBold,  { opacity: boldVeil,  duration: 0.3, ease: "power2.out" });
+        gsap.to(veilClean, { opacity: cleanVeil, duration: 0.3, ease: "power2.out" });
+        /* bold label pops hard; clean label rises softly */
+        gsap.to(labelBold,  { scale: boldActive ? 1.08 : 1, y: boldActive ? -6 : 0,
+                              opacity: boldActive ? 1 : 0.5, duration: 0.12, ease: "steps(3)" });
+        gsap.to(labelClean, { y: cleanActive ? -3 : 0, opacity: cleanActive ? 1 : 0.5,
+                              duration: 0.25, ease: "power2.out" });
+      } else {
+        veilBold.style.opacity = boldVeil;
+        veilClean.style.opacity = cleanVeil;
+        labelBold.style.opacity = boldActive ? 1 : 0.5;
+        labelClean.style.opacity = cleanActive ? 1 : 0.5;
+      }
+    }
+
+    /* ---------- gooey blob followers (GSAP quickTo, lagged per blob) ---------- */
+    var blobSetX = [], blobSetY = [];
+    if (hasGSAP) {
+      follows.forEach(function (f, i) {
+        var dur = 0.5 + i * 0.22;   // each blob trails a little more → gooey lag
+        blobSetX.push(gsap.quickTo(f, "x", { duration: dur, ease: "power2.out" }));
+        blobSetY.push(gsap.quickTo(f, "y", { duration: dur, ease: "power2.out" }));
+        /* slow autonomous drift so the field is never fully static */
+        if (!reduce) {
+          gsap.to(f.firstElementChild, {
+            xPercent: gsap.utils.random(-12, 12), yPercent: gsap.utils.random(-12, 12),
+            duration: gsap.utils.random(5, 8), repeat: -1, yoyo: true, ease: "sine.inOut"
+          });
+        }
+      });
+    }
+
+    function moveBlobs() {
+      if (!hasGSAP) return;
+      follows.forEach(function (f, i) {
+        var ox = parseFloat(f.dataset.ox) || 0;
+        var oy = parseFloat(f.dataset.oy) || 0;
+        if (cleanActive) {
+          /* pull toward the pointer, offset per blob so they cluster gooily */
+          blobSetX[i]((mx - W * 0.74) + ox);
+          blobSetY[i]((my - H * 0.5) + oy);
+        } else {
+          blobSetX[i](0);   // ease home
+          blobSetY[i](0);
+        }
+      });
+    }
+
+    /* ---------- dither render ---------- */
+    function drawDither() {
+      ctx.clearRect(0, 0, W, H);
+      var r = 360;                          // reveal radius around cursor
+      var path = new Path2D();
+      for (var gy = 0; gy < rows; gy++) {
+        var py = gy * CELL, cy = py + CELL / 2, row = BAYER[gy & 7];
+        for (var gx = 0; gx < cols; gx++) {
+          var px = gx * CELL, cx = px + CELL / 2;
+          var dx = cx - mx, dy = cy - my;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          var b = 1 - d / r; if (b < 0) b = 0; b *= b;      // sharp radial falloff
+          b = b * intCur + AMBIENT;
+          if (b > (row[gx & 7] + 0.5) / 64) path.rect(px, py, CELL, CELL);
+        }
+      }
+      ctx.fillStyle = PINK;
+      ctx.fill(path);
+    }
+
+    /* ---------- main loop ---------- */
+    function tick() {
+      splitCur += (splitTarget - splitCur) * 0.14;
+      intCur   += (intTarget - intCur) * 0.12;
+      if (!hasGSAP) root.style.setProperty("--split", splitCur + "px");
+      drawDither();
+      moveBlobs();
+      requestAnimationFrame(tick);
+    }
+
+    /* ---------- pointer / focus wiring ---------- */
+    function setSide(x) {
+      mx = x;
+      var norm = x / W;
+      boldActive  = norm < 0.5;
+      cleanActive = !boldActive;
+      /* hovered half grows toward 60/40; divider glides with the pointer */
+      var s = 50 + (0.5 - norm) * 24;       // 38 … 62
+      s = Math.max(38, Math.min(62, s));
+      splitTarget = W * s / 100;
+      if (hasGSAP) setSplit(splitTarget);
+      intTarget = boldActive ? 1 : 0.12;
+      paintState();
+    }
+
+    function reset() {
+      inside = false; boldActive = false; cleanActive = false;
+      splitTarget = W / 2;
+      if (hasGSAP) setSplit(splitTarget);
+      intTarget = 0;
+      paintState();
+    }
+
+    if (!reduce) {
+      window.addEventListener("pointermove", function (e) {
+        inside = true; my = e.clientY; setSide(e.clientX);
+      }, { passive: true });
+      window.addEventListener("pointerleave", reset);
+      document.addEventListener("mouseleave", reset);
+      /* keyboard: focusing a half activates its side + effect */
+      boldPanel.addEventListener("focus",  function () { inside = true; setSide(W * 0.25); });
+      cleanPanel.addEventListener("focus", function () { inside = true; setSide(W * 0.75); });
+      boldPanel.addEventListener("blur", reset);
+      cleanPanel.addEventListener("blur", reset);
+      paintState();
+      requestAnimationFrame(tick);
+    } else {
+      /* reduced motion: static, calm, centred split with a soft reveal at middle */
+      intCur = intTarget = 0.7; drawDither(); paintState();
+    }
+
+    /* ---------- click / activate → real routes ----------
+       bold/ and clean/ set the theme (localStorage) and redirect into the
+       portfolio (index.html?theme=…). navigating guard avoids double-fires. */
+    var navigating = false;
+    function choose(side) {
+      if (navigating) return;
+      navigating = true;
+      location.href = side === "bold" ? "bold/" : "clean/";
+    }
+    boldPanel.addEventListener("click",  function () { choose("bold"); });
+    cleanPanel.addEventListener("click", function () { choose("clean"); });
+    [boldPanel, cleanPanel].forEach(function (p) {
+      p.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(p === boldPanel ? "bold" : "clean"); }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

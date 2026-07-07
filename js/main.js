@@ -9,7 +9,7 @@
      Replaces the old dropdown menu: a small sticker cube (CSS 3D) spins
      inside the nav pill; clicking it opens a fullscreen overlay where the
      big cube can be dragged, and tapping a face jumps to its section
-     (case-study pages jump back to index.html). Built entirely in JS so
+     (case-study pages jump back to home.html). Built entirely in JS so
      the markup stays clean without it; with reduced motion the cube
      holds still but stays fully usable. */
   (function () {
@@ -288,7 +288,7 @@
       var section = document.querySelector(anchor);
       closeCube();
       if (section) section.scrollIntoView({ behavior: stillCube ? "auto" : "smooth", block: "start" });
-      else location.href = "index.html" + anchor;
+      else location.href = "home.html" + anchor;
     });
 
     /* idle spin — gentle in the pill, calmer when expanded */
