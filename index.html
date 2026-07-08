@@ -408,6 +408,14 @@
     function choose(side) {
       if (navigating) return;
       navigating = true;
+      /* Back-button fix (touch only): a click carries a user activation, so on
+         desktop this navigation PUSHES a history entry and Back returns to the
+         landing. A swipe fires from inside the passive touch handler with no
+         such activation, so mobile browsers REPLACE the landing entry instead —
+         Back then skips it and lands on whatever preceded the landing. Seeding a
+         duplicate landing entry first guarantees Back always returns here,
+         whether the browser goes on to push or replace. */
+      if (coarse) { try { history.pushState(null, "", location.href); } catch (e) {} }
       location.href = side === "bold" ? "bold/" : "clean/";
     }
     /* click = choose, but only with a real pointer; on touch the landing is
@@ -436,21 +444,25 @@
        The landing is swipe-only on touch — a tap selects nothing. Two ways to
        commit, both feeling like a real swipe:
          • EDGE  — drag the divider all the way to a screen edge. Works for a
-                   slow, deliberate drag; nothing ever fires from the middle.
-         • FLICK — a quick, short horizontal flick, committed on velocity, so
-                   you don't have to reach the edge.
+                   slow, deliberate drag; nothing fires until the finger sits
+                   right up against the edge (EDGE_ZONE).
+         • FLICK — a quick horizontal flick, judged ON RELEASE by the AVERAGE
+                   speed across the whole swipe. Average (not instantaneous)
+                   speed means a tiny jerky twitch can never register: the
+                   finger has to actually cover FLICK_MIN px, and cover it fast,
+                   before velocity is even weighed.
        Direction follows the growing side: drag/flick LEFT grows Clean (the
        right half) → go Clean; drag/flick RIGHT grows Bold (the left half) →
        go Bold. The divider tracks the finger so the growing side is visible;
        releasing without meeting a threshold snaps back. touch-action:none
        (set in CSS) stops the browser stealing the horizontal drag. */
     (function () {
-      var EDGE_ZONE = 0.06;   // must drag within 6% of a side edge (was 0.14 — fired ~3/4 way)
-      var FLICK_V   = 0.95;   // px/ms — only a genuinely fast flick counts (was 0.55)
-      var FLICK_MIN = 45;     // px — min travel so nothing fires from a tap/jitter
+      var EDGE_ZONE = 0.04;   // 4% — slow drag must reach right up to the edge (was 0.06)
+      var FLICK_V   = 0.8;    // px/ms — required AVERAGE speed of a genuine flick
+      var FLICK_MIN = 55;     // px — min travel that must be covered before velocity counts (was 45)
       var DIR_RATIO = 1.3;    // horizontal must dominate vertical by this factor
 
-      var startX = 0, startY = 0, startT = 0, lastX = 0, lastT = 0, vx = 0;
+      var startX = 0, startY = 0, startT = 0;
       var tracking = false, fired = false;
 
       /* move the divider to follow the finger, growing the side it uncovers */
@@ -470,32 +482,38 @@
         choose(side);
       }
 
-      /* shared gesture test → "bold" | "clean" | null */
-      function verdict(x, dx, dy, v) {
-        if (Math.abs(dx) < FLICK_MIN) return null;                 // tap / micro-move
+      /* slow, deliberate drag → only commits once the finger reaches a screen
+         edge. Checked live during the drag; velocity plays no part here. */
+      function edgeSide(x, dx, dy) {
         if (Math.abs(dx) <= Math.abs(dy) * DIR_RATIO) return null; // not horizontal
         if (x <= W * EDGE_ZONE && dx < 0) return "clean";          // dragged to left edge
         if (x >= W * (1 - EDGE_ZONE) && dx > 0) return "bold";     // dragged to right edge
-        if (Math.abs(v) >= FLICK_V) return v < 0 ? "clean" : "bold";
-        return null;                                               // slow, not at edge yet
+        return null;
+      }
+
+      /* flick → judged on release by average speed. The FLICK_MIN gate comes
+         FIRST: below it the swipe is too short and velocity is never even
+         looked at, so a 1 mm twitch can't slip through on a lucky spike. */
+      function flickSide(dx, dy, v) {
+        if (Math.abs(dx) < FLICK_MIN) return null;                 // not far enough — ignore velocity
+        if (Math.abs(dx) <= Math.abs(dy) * DIR_RATIO) return null; // not horizontal
+        if (Math.abs(v) < FLICK_V) return null;                    // covered the distance, but not fast
+        return v < 0 ? "clean" : "bold";
       }
 
       stage.addEventListener("touchstart", function (e) {
         var t = e.changedTouches[0];
-        startX = lastX = t.clientX; startY = t.clientY;
-        startT = lastT = (e.timeStamp || Date.now());
-        vx = 0; tracking = true; fired = false;
+        startX = t.clientX; startY = t.clientY;
+        startT = (e.timeStamp || Date.now());
+        tracking = true; fired = false;
         /* no setSide here — a tap must never light or select a side */
       }, { passive: true });
 
       stage.addEventListener("touchmove", function (e) {
         if (!tracking || fired) return;
-        var t = e.changedTouches[0];
-        var now = (e.timeStamp || Date.now()), x = t.clientX, dt = now - lastT;
-        if (dt > 0) vx = (x - lastX) / dt;      // instantaneous px/ms
-        lastX = x; lastT = now;
+        var t = e.changedTouches[0], x = t.clientX;
         if (!reduce) { my = t.clientY; dragDivider(x); }
-        var side = verdict(x, x - startX, t.clientY - startY, vx);
+        var side = edgeSide(x, x - startX, t.clientY - startY);   // edge only mid-drag
         if (side) commit(side);
       }, { passive: true });
 
@@ -506,7 +524,8 @@
         var t = e.changedTouches[0];
         var dx = t.clientX - startX, dy = t.clientY - startY;
         var totalT = (e.timeStamp || Date.now()) - startT;
-        var side = verdict(t.clientX, dx, dy, totalT > 0 ? dx / totalT : 0);
+        var v = totalT > 0 ? dx / totalT : 0;   // average px/ms over the whole swipe
+        var side = edgeSide(t.clientX, dx, dy) || flickSide(dx, dy, v);
         if (side) { commit(side); return; }
         if (!reduce) reset();     // a tap or an unfinished slow drag → snap back
       }, { passive: true });
