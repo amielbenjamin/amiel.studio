@@ -448,10 +448,13 @@
          • EDGE  — drag the divider all the way to a screen edge. Works for a
                    slow, deliberate drag; nothing fires until the finger sits
                    right up against the edge (EDGE_ZONE).
-         • FLICK — a quick horizontal flick, judged ON RELEASE by the AVERAGE
-                   speed across the whole swipe. Average (not instantaneous)
-                   speed means a tiny jerky twitch can never register: the
-                   finger has to actually cover FLICK_MIN px, and cover it fast,
+         • FLICK — a quick horizontal flick, judged ON RELEASE by the speed
+                   over the TAIL of the swipe (a moving average of the last few
+                   touchmove samples — see releaseVelocity). Windowing the tail
+                   means the finger's real speed and direction at lift-off
+                   decide it, so slowing down or reversing near the end is
+                   respected rather than washed out by an early burst. A tiny
+                   jerky twitch still can't register: FLICK_MIN gates travel
                    before velocity is even weighed.
        Direction follows the growing side: drag/flick LEFT grows Clean (the
        right half) → go Clean; drag/flick RIGHT grows Bold (the left half) →
@@ -460,13 +463,43 @@
        (set in CSS) stops the browser stealing the horizontal drag. */
     (function () {
       var EDGE_ZONE = 0.04;   // 4% — slow drag must reach right up to the edge (was 0.06)
-      var FLICK_V   = 0.8;    // px/ms — required AVERAGE speed of a genuine flick
+      var FLICK_V   = 0.8;    // px/ms — required release speed (tail-window) of a genuine flick
       var FLICK_MIN = 55;     // px — min travel that must be covered before velocity counts (was 45)
       var DIR_RATIO = 1.3;    // horizontal must dominate vertical by this factor
 
       var startX = 0, startY = 0, startT = 0;
       var tracking = false, fired = false;
       var glideTween = null;    // active release-momentum tween, if any
+
+      /* ---------- release-velocity sampling ----------
+         The flick/inertia velocity must be the finger's ACTUAL speed and
+         direction at lift-off — not the start-vs-end average. That average
+         washes out anything that happens mid-swipe: slow down or reverse near
+         the end and it still reports the original speed/direction, so a gesture
+         that had already stopped or turned would read as a strong flick, or a
+         genuine late flick would be diluted into a snap-back. Instead we keep a
+         short trail of recent {x, t} points and, on release, measure the speed
+         over only the last VELOCITY_WINDOW ms — a moving average across the
+         final handful of touchmove events (≈6 at 60 Hz, ≈12 at 120 Hz). If the
+         finger paused before releasing there are no samples inside that window,
+         so velocity reads ~0 and it honestly snaps back. */
+      var VELOCITY_WINDOW = 100;   // ms — tail window the release velocity is averaged over
+      var samples = [];            // recent {x, t} touch points (trimmed to ~2× the window)
+
+      function pushSample(x, t) {
+        samples.push({ x: x, t: t });
+        var cutoff = t - VELOCITY_WINDOW * 2;
+        while (samples.length > 2 && samples[0].t < cutoff) samples.shift();
+      }
+
+      /* px/ms over the last VELOCITY_WINDOW ms; sign = current direction. */
+      function releaseVelocity(endX, endT) {
+        pushSample(endX, endT);
+        var i = samples.length - 1;
+        while (i > 0 && endT - samples[i - 1].t <= VELOCITY_WINDOW) i--;
+        var ref = samples[i], dt = endT - ref.t;
+        return dt > 0 ? (endX - ref.x) / dt : 0;
+      }
 
       /* move the divider to follow the finger, growing the side it uncovers */
       function dragDivider(x) {
@@ -494,9 +527,12 @@
         return null;
       }
 
-      /* flick → judged on release by average speed. The FLICK_MIN gate comes
-         FIRST: below it the swipe is too short and velocity is never even
-         looked at, so a 1 mm twitch can't slip through on a lucky spike. */
+      /* flick → judged on release by the tail-window speed `v` (from
+         releaseVelocity). The FLICK_MIN gate on total travel comes FIRST: below
+         it the swipe is too short and velocity is never even looked at, so a
+         1 mm twitch can't slip through on a lucky spike. Direction comes from
+         the sign of `v`, i.e. where the finger was heading at lift-off — which
+         may differ from the swipe's overall drift if it reversed at the end. */
       function flickSide(dx, dy, v) {
         if (Math.abs(dx) < FLICK_MIN) return null;                 // not far enough — ignore velocity
         if (Math.abs(dx) <= Math.abs(dy) * DIR_RATIO) return null; // not horizontal
@@ -507,7 +543,7 @@
       /* ---------- release momentum (inertia) ----------
          On release the divider keeps coasting in the flick direction and eases
          out, instead of stopping dead or snapping straight to the end state. The
-         coast reuses the same average release velocity `v` (px/ms) flick
+         coast reuses the same tail-window release velocity `v` (px/ms) flick
          detection already computes — the thresholds (EDGE_ZONE, FLICK_MIN,
          FLICK_V) are untouched; this only shapes the motion AFTER the trigger.
          Decay model: an exponential-decay fling. Projected travel = v · TAU,
@@ -570,6 +606,7 @@
         var t = e.changedTouches[0];
         startX = t.clientX; startY = t.clientY;
         startT = (e.timeStamp || Date.now());
+        samples = [{ x: startX, t: startT }];   // seed the release-velocity trail
         tracking = true; fired = false;
         /* no setSide here — a tap must never light or select a side */
       }, { passive: true });
@@ -577,6 +614,7 @@
       stage.addEventListener("touchmove", function (e) {
         if (!tracking || fired) return;
         var t = e.changedTouches[0], x = t.clientX;
+        pushSample(x, (e.timeStamp || Date.now()));   // feed the moving-average trail
         if (!reduce) { my = t.clientY; dragDivider(x); }
         var side = edgeSide(x, x - startX, t.clientY - startY);   // edge only mid-drag
         if (side) commit(side);
@@ -588,8 +626,8 @@
         if (fired) return;
         var t = e.changedTouches[0];
         var dx = t.clientX - startX, dy = t.clientY - startY;
-        var totalT = (e.timeStamp || Date.now()) - startT;
-        var v = totalT > 0 ? dx / totalT : 0;   // average px/ms over the whole swipe
+        var endT = (e.timeStamp || Date.now());
+        var v = releaseVelocity(t.clientX, endT);   // px/ms over the last VELOCITY_WINDOW ms
         var side = edgeSide(t.clientX, dx, dy) || flickSide(dx, dy, v);
         if (side) { glideCommit(side, v); return; }   // coast open, then navigate
         if (!reduce) glideBack(v);                     // coast out, then spring back to centre

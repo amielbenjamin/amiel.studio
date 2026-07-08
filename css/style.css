@@ -1882,7 +1882,11 @@ body.lightbox-open { overflow: hidden; }
    so bold/arcade keeps its own responsive hero untouched. */
 @media (max-width: 1024px) {
   [data-theme="clean"] .hero { min-height: 0; }
-  [data-theme="clean"] .hero__grid { grid-template-columns: 1fr; }
+  /* same flush-to-bottom trick as the ≥1025px hero: drop the grid's bottom
+     padding so the portrait's bottom:0 lands exactly on the hero's lower edge.
+     Without this the base .hero__grid padding-block reappears here and leaves a
+     gap under the photo on narrow screens. */
+  [data-theme="clean"] .hero__grid { grid-template-columns: 1fr; padding-bottom: 0; }
   [data-theme="clean"] .hero__stack {
     min-height: 0;
     max-width: 460px;
