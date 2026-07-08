@@ -2157,17 +2157,17 @@ html, body {
     flex-shrink: 0 !important;
 }
 
-
-/* --- FIX FÜR DAS ÜBERLAPPENDE MENÜ AUF DEM HANDY --- */
+/* --- NEUER FIX: HANDY-MENÜ FÄHRT MIT --- */
 @media (max-width: 768px) {
     .site-header {
-        position: absolute !important; 
-        top: 0 !important;
+        position: sticky !important; 
+        top: 15px !important; /* Ein kleiner, schicker Abstand zum oberen Rand */
+        z-index: 9999 !important; /* Stellt sicher, dass das Menü immer ganz vorne ist und nichts es verdeckt */
         background: transparent !important;
     }
     
-    /* Sorgt dafür, dass der Inhalt nicht unter das Menü rutscht */
+    /* Wir heben das künstliche Padding wieder auf, da 'sticky' den Platz selbst berechnet */
     body {
-        padding-top: 100px !important; /* Wert ggf. anpassen, je nachdem wie hoch dein Menü ist */
+        padding-top: 0 !important; 
     }
 }
