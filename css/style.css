@@ -2136,37 +2136,18 @@ body.lightbox-open { overflow: hidden; }
   will-change: transform;
 }
 
-/* ---------- clean · continuous scroll gradient (touch only) ----------
+/* ---------- clean · scroll block interaction (touch only) ----------
    On coarse-pointer / touch devices there is no cursor to carry the clean
-   theme's pink light, so main.js draws ONE continuous line down the right
-   edge, tied to scroll. It replaces the earlier two-part glow (a fixed blob
-   plus per-card nodes) that read as separate segments with a visible break:
-   now a single SVG stroke is drawn by one scrub tween across the whole content
-   run, so the gradient is seamless. main.js adds `scroll-glow-on` ONLY when
-   the theme is clean AND the device matches (hover: none) and (pointer:
-   coarse) — that class gates every rule below, so none of this shows on
-   desktop / with a mouse / in bold. The line sits below the header (z 100)
-   and paper grain (z 120), and is purely decorative (pointer-events: none). */
-html.scroll-glow-on .scroll-line {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: clamp(72px, 22vw, 150px);
-  height: 100vh;
-  height: 100dvh;
-  pointer-events: none;
-  z-index: 50;
-  /* soft, single, weightless line */
-  filter: blur(0.6px) drop-shadow(0 0 6px rgba(255, 128, 203, 0.35));
-}
-html.scroll-glow-on .scroll-line__path { stroke-width: 3; }
+   theme's pink light, so main.js instead makes each project block react to
+   scroll. main.js adds `scroll-glow-on` ONLY when the theme is clean AND the
+   device matches (hover: none) and (pointer: coarse) — that class gates every
+   rule below, so none of this shows on desktop / with a mouse / in bold.
 
-/* per-block interaction: as the line passes a project block it grows a touch
-   (subtle — not a zoom) and its right edge takes a light, dezent pink tint.
-   main.js toggles .is-glow while the block is in the middle band. The tint
-   overlay is inset:0 so it can never spill past a block that clips its
-   overflow (e.g. the collage .card); the pink is intentionally faint so it
-   never overpowers the card art or text. */
+   As a block crosses the middle band it grows a touch (subtle — not a zoom)
+   and its right edge takes a light, dezent pink tint. main.js toggles .is-glow
+   while the block is in the band. The tint overlay is inset:0 so it can never
+   spill past a block that clips its overflow (e.g. the collage .card); the
+   pink is intentionally faint so it never overpowers the card art or text. */
 html.scroll-glow-on .glow-card {
   position: relative;
   transition: transform .55s var(--ease-spring, ease-out);

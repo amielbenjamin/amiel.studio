@@ -22,9 +22,11 @@
     var faceBg = cubeClean ? "#E7E7EA" : "var(--pink)";
     var faceBorder = cubeClean ? "2px solid rgba(20, 20, 24, .16)" : "3px solid var(--ink, #16161a)";
     var faceText = cubeClean ? "var(--ink, #1a1a1a)" : "var(--white, #fff)";
-    /* clean hover: a white→pink wash (was black→pink). bold hover: the beige
-       paper token with black text — both defined by setActiveFace below. */
-    var faceHoverBg = "linear-gradient(150deg, rgba(255, 255, 255, .95) 0%, var(--pink) 100%)";
+    /* clean hover: a white→pink wash. NOTE the pink is the literal signature
+       accent (#ff80cb), not var(--pink): the clean theme remaps --pink to ink,
+       so var(--pink) here would render white→black. bold hover uses the beige
+       paper token with black text — both are defined by setActiveFace below. */
+    var faceHoverBg = "linear-gradient(150deg, rgba(255, 255, 255, .95) 0%, #ff80cb 100%)";
 
     var HALF = 80, PERSPECTIVE = 1400, STAGE = 340, SVG_SIZE = 360, CORNER_R = 10, STROKE = 9;
     var DOCK_SCALE = 0.17, DOCK_SIZE = 48;
@@ -1001,26 +1003,24 @@
     });
   }
 
-  /* ---------- clean · continuous scroll gradient (touch only) ----------
+  /* ---------- clean · scroll block interaction (touch only) ----------
      On fine pointers the clean theme's pink light trails the cursor; on
-     coarse-pointer touch devices there is no cursor, so the same signature
-     pink is carried by ONE continuous line down the right edge instead. A
-     single SVG path is drawn by ONE scrub tween across the whole content run
-     (hero → footer) — a seamless, unbroken stroke, replacing the old two-part
-     glow (a fixed blob PLUS per-card nodes) that read as separate segments
-     with a visible break. As the line passes each project block, that block
-     grows a touch and takes a soft, light pink edge tint (its own
-     ScrollTrigger). Coupled to scroll position, never :hover, so it works
-     without a pointer. Gate is a reliable feature test — (hover: none) and
-     (pointer: coarse) — not a viewport width, so a narrow desktop window is
-     never mistaken for a touch device. */
+     coarse-pointer touch devices there is no cursor, so instead each project
+     block reacts to scroll: as it crosses the middle band it grows a touch and
+     takes a soft, light pink edge tint (its own ScrollTrigger). Coupled to
+     scroll position, never :hover, so it works without a pointer. Gate is a
+     reliable feature test — (hover: none) and (pointer: coarse) — not a
+     viewport width, so a narrow desktop window is never mistaken for touch.
+     (An earlier build also drew a continuous pink line down the right edge;
+     that was removed — it originated from a screenshot annotation, not an
+     intended design element.) */
   if (themeClean &&
       window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
     var glowHero = document.querySelector(".hero");
     var glowFooter = document.querySelector(".site-footer");
-    /* the project blocks the line interacts with: product tiles, experience
-       rows and the social collage cards (the visible surface there is the
-       inner .card, the rounded, overflow-clipped element) */
+    /* the project blocks that react to scroll: product tiles, experience rows
+       and the social collage cards (the visible surface there is the inner
+       .card, the rounded, overflow-clipped element) */
     var glowCards = [];
     gsap.utils.toArray(".product-card, .work-row, .collage-card").forEach(function (card) {
       var surface = card.classList.contains("collage-card") ? card.querySelector(".card") : card;
@@ -1029,48 +1029,8 @@
     if (glowHero && glowFooter && glowCards.length) {
       document.documentElement.classList.add("scroll-glow-on");
 
-      /* one fixed SVG line on the right: a soft pink gradient stroke whose ends
-         fade to nothing. preserveAspectRatio=none stretches the wavy path to
-         the full viewport height, non-scaling-stroke keeps the width crisp at
-         any stretch, and pathLength=1 lets a single normalised dashoffset draw
-         the whole thing. */
-      var SVGNS = "http://www.w3.org/2000/svg";
-      var line = document.createElementNS(SVGNS, "svg");
-      line.setAttribute("class", "scroll-line");
-      line.setAttribute("aria-hidden", "true");
-      line.setAttribute("preserveAspectRatio", "none");
-      line.setAttribute("viewBox", "0 0 100 1000");
-      line.innerHTML =
-        '<defs><linearGradient id="scrollLineGrad" x1="0" y1="0" x2="0" y2="1">' +
-          '<stop offset="0" stop-color="#ff80cb" stop-opacity="0"/>' +
-          '<stop offset="0.12" stop-color="#ff80cb" stop-opacity="0.85"/>' +
-          '<stop offset="0.88" stop-color="#ff80cb" stop-opacity="0.85"/>' +
-          '<stop offset="1" stop-color="#ff80cb" stop-opacity="0"/>' +
-        '</linearGradient></defs>' +
-        '<path class="scroll-line__path" fill="none" stroke="url(#scrollLineGrad)" ' +
-          'pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" ' +
-          'vector-effect="non-scaling-stroke" stroke-linecap="round" ' +
-          'd="M78 0 C46 130 96 270 62 400 C34 520 92 640 66 780 C48 890 82 940 72 1000"/>';
-      document.body.appendChild(line);
-
-      /* pathLength=1 normalises the dash, so offset 1 → hidden, 0 → fully drawn.
-         Animate the ATTRIBUTE (always unitless) so this ONE tween draws the
-         whole line seamlessly across the entire scroll run. */
-      var linePath = line.querySelector(".scroll-line__path");
-      gsap.to(linePath, {
-        attr: { "stroke-dashoffset": 0 },
-        ease: "none",
-        scrollTrigger: {
-          trigger: glowHero,
-          start: "bottom 85%",
-          endTrigger: glowFooter,
-          end: "top 15%",
-          scrub: 0.6
-        }
-      });
-
-      /* per block: while it sits in the middle band the line is passing, grow
-         it a touch and give its right edge a gentle, light pink tint (both via
+      /* per block: as it crosses the middle band while scrolling, grow it a
+         touch and give its right edge a gentle, light pink tint (both via
          .is-glow — CSS eases them). One ScrollTrigger per card ties the effect
          to that block's own scroll position; it is deliberately subtle. */
       glowCards.forEach(function (card) {

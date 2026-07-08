@@ -445,8 +445,8 @@
        releasing without meeting a threshold snaps back. touch-action:none
        (set in CSS) stops the browser stealing the horizontal drag. */
     (function () {
-      var EDGE_ZONE = 0.14;   // fraction of width near a side that counts as "edge"
-      var FLICK_V   = 0.55;   // px/ms — min speed for a flick
+      var EDGE_ZONE = 0.06;   // must drag within 6% of a side edge (was 0.14 — fired ~3/4 way)
+      var FLICK_V   = 0.95;   // px/ms — only a genuinely fast flick counts (was 0.55)
       var FLICK_MIN = 45;     // px — min travel so nothing fires from a tap/jitter
       var DIR_RATIO = 1.3;    // horizontal must dominate vertical by this factor
 
@@ -455,7 +455,7 @@
 
       /* move the divider to follow the finger, growing the side it uncovers */
       function dragDivider(x) {
-        var clamped = Math.max(W * 0.08, Math.min(W * 0.92, x));
+        var clamped = Math.max(W * 0.05, Math.min(W * 0.95, x));   // follow near to the edge
         mx = clamped; splitTarget = clamped;
         if (hasGSAP) setSplit(splitTarget);
         boldActive = clamped / W > 0.5;   // divider right of centre → Bold grows
