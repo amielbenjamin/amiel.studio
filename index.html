@@ -261,11 +261,15 @@
     window.addEventListener("resize", resize);
     resize();
 
-    /* ---------- divider setter (GSAP-eased when available) ---------- */
+    /* ---------- divider setter (GSAP-eased when available) ----------
+       splitProxy is kept as a named object so the release-momentum glide in the
+       touch block below can pause this follow-tween and animate the same value
+       itself — the two never fight over --split. */
+    var splitProxy = { v: splitCur };
     var setSplit = hasGSAP
-      ? gsap.quickTo({ v: splitCur }, "v", {
+      ? gsap.quickTo(splitProxy, "v", {
           duration: 0.4, ease: "power3.out",
-          onUpdate: function () { root.style.setProperty("--split", this.targets()[0].v + "px"); }
+          onUpdate: function () { root.style.setProperty("--split", splitProxy.v + "px"); }
         })
       : function (v) { splitCur = v; root.style.setProperty("--split", v + "px"); };
 
@@ -464,6 +468,7 @@
 
       var startX = 0, startY = 0, startT = 0;
       var tracking = false, fired = false;
+      var glideTween = null;    // active release-momentum tween, if any
 
       /* move the divider to follow the finger, growing the side it uncovers */
       function dragDivider(x) {
@@ -501,7 +506,69 @@
         return v < 0 ? "clean" : "bold";
       }
 
+      /* ---------- release momentum (inertia) ----------
+         On release the divider keeps coasting in the flick direction and eases
+         out, instead of stopping dead or snapping straight to the end state. The
+         coast reuses the same average release velocity `v` (px/ms) flick
+         detection already computes — the thresholds (EDGE_ZONE, FLICK_MIN,
+         FLICK_V) are untouched; this only shapes the motion AFTER the trigger.
+         Decay model: an exponential-decay fling. Projected travel = v · TAU,
+         laid down with GSAP's `expo.out` ease — expo.out(p) = 1 − 2^(−10p) is
+         itself an exponential decay curve, so the divider bleeds off speed the
+         way a thrown object does rather than cutting out. syncSplit keeps
+         splitProxy the single source of truth for --split. */
+      var TAU = 190;   // ms — fling time constant: coast distance per unit release speed
+
+      function syncSplit() {
+        var x = splitProxy.v;
+        splitCur = splitTarget = mx = x;
+        root.style.setProperty("--split", x + "px");
+      }
+
+      /* pause the drag-follow quickTo so it can't fight the glide over --split;
+         the next setSplit() call transparently restarts it. */
+      function freezeFollow() { if (hasGSAP && setSplit.tween) setSplit.tween.pause(); }
+
+      /* threshold met → coast fully open toward the chosen edge, then navigate.
+         Duration scales inversely with release speed (harder flick = snappier),
+         with a floor so a slow edge-drag still glides rather than teleports. */
+      function glideCommit(side, v) {
+        if (fired) return;
+        fired = true; tracking = false;
+        boldActive = side === "bold"; cleanActive = !boldActive;
+        intTarget = boldActive ? 1 : 0.12; paintState();
+        if (!hasGSAP) { choose(side); return; }
+        var start = splitProxy.v;
+        var target = side === "bold" ? W : 0;             // divider flies open to the edge
+        var speed = Math.max(Math.abs(v), 0.5);           // px/ms floor
+        var dur = Math.max(0.14, Math.min(0.4, Math.abs(target - start) / (speed * 1000)));
+        if (glideTween) glideTween.kill();
+        freezeFollow();
+        glideTween = gsap.to(splitProxy, {
+          v: target, duration: dur, ease: "expo.out",
+          onUpdate: syncSplit,
+          onComplete: function () { choose(side); }
+        });
+      }
+
+      /* threshold NOT met → coast a little further in the flick direction, then
+         spring back to centre. Two eased phases (coast-out, damped return) read
+         as one continuous, decaying motion — never an abrupt snap. */
+      function glideBack(v) {
+        boldActive = false; cleanActive = false; intTarget = 0; paintState();
+        if (!hasGSAP) { reset(); return; }
+        var start = splitProxy.v;
+        var proj = Math.max(W * 0.05, Math.min(W * 0.95, start + v * TAU));
+        var coast = Math.min(0.28, Math.abs(proj - start) / 1100);   // longer throw → longer coast
+        if (glideTween) glideTween.kill();
+        freezeFollow();
+        glideTween = gsap.timeline()
+          .to(splitProxy, { v: proj,  duration: coast, ease: "expo.out",  onUpdate: syncSplit })
+          .to(splitProxy, { v: W / 2, duration: 0.55,  ease: "power3.out", onUpdate: syncSplit });
+      }
+
       stage.addEventListener("touchstart", function (e) {
+        if (glideTween) { glideTween.kill(); glideTween = null; }
         var t = e.changedTouches[0];
         startX = t.clientX; startY = t.clientY;
         startT = (e.timeStamp || Date.now());
@@ -526,12 +593,13 @@
         var totalT = (e.timeStamp || Date.now()) - startT;
         var v = totalT > 0 ? dx / totalT : 0;   // average px/ms over the whole swipe
         var side = edgeSide(t.clientX, dx, dy) || flickSide(dx, dy, v);
-        if (side) { commit(side); return; }
-        if (!reduce) reset();     // a tap or an unfinished slow drag → snap back
+        if (side) { glideCommit(side, v); return; }   // coast open, then navigate
+        if (!reduce) glideBack(v);                     // coast out, then spring back to centre
       }, { passive: true });
 
       stage.addEventListener("touchcancel", function () {
         tracking = false;
+        if (glideTween) { glideTween.kill(); glideTween = null; }
         if (!reduce && !fired) reset();
       }, { passive: true });
     })();
