@@ -934,6 +934,57 @@
     });
   }
 
+  /* ---------- clean · scroll-coupled pink glow (touch only) ----------
+     The clean theme's pink light trails the cursor on fine pointers; on
+     coarse-pointer touch devices there is no cursor, so the same signature
+     glow is driven by scroll. It fades in once the hero is scrolled past,
+     rides the right edge until the footer, and lights up whichever section
+     it is currently sweeping over. Everything is coupled to scroll position
+     via ScrollTrigger (never :hover), so it works without a pointer. The
+     gate is a reliable feature test — (hover: none) and (pointer: coarse) —
+     not a viewport width, so a narrow desktop window is never mistaken for
+     a touch device. */
+  if (themeClean &&
+      window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
+    var glowHero = document.querySelector(".hero");
+    var glowFooter = document.querySelector(".site-footer");
+    var glowSections = gsap.utils.toArray("main > section:not(.hero)");
+    if (glowHero && glowFooter && glowSections.length) {
+      document.documentElement.classList.add("scroll-glow-on");
+
+      var scrollGlow = document.createElement("div");
+      scrollGlow.className = "scroll-glow";
+      scrollGlow.setAttribute("aria-hidden", "true");
+      document.body.appendChild(scrollGlow);
+
+      /* visible from just past the hero (its bottom crosses mid-screen)
+         until the footer is reached (its top crosses mid-screen) */
+      ScrollTrigger.create({
+        trigger: glowHero,
+        start: "bottom center",
+        endTrigger: glowFooter,
+        end: "top center",
+        onToggle: function (self) {
+          scrollGlow.classList.toggle("is-visible", self.isActive);
+        }
+      });
+
+      /* one section at a time lights as it crosses the glow's band —
+         the viewport centre, matching the fixed glow's vertical anchor */
+      glowSections.forEach(function (sec) {
+        sec.classList.add("glow-section");
+        ScrollTrigger.create({
+          trigger: sec,
+          start: "top center",
+          end: "bottom center",
+          onToggle: function (self) {
+            sec.classList.toggle("is-lit", self.isActive);
+          }
+        });
+      });
+    }
+  }
+
   /* ---------- active nav link tracking ---------- */
   var navLinks = document.querySelectorAll(".nav-links a[href^='#']");
   navLinks.forEach(function (link) {

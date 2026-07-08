@@ -1852,7 +1852,7 @@ body.lightbox-open { overflow: hidden; }
 /* desktop: let the hero column stretch the full section height so the
    portrait sits ON the lower edge of the hero instead of floating,
    centred, in empty space above it */
-@media (min-width: 901px) {
+@media (min-width: 1025px) {
   [data-theme="clean"] .hero { display: flex; flex-direction: column; }
   [data-theme="clean"] .hero__grid {
     flex: 1 1 auto;
@@ -1863,9 +1863,14 @@ body.lightbox-open { overflow: hidden; }
   [data-theme="clean"] .hero__stack { align-self: stretch; min-height: 0; }
 }
 
-/* mobile: portrait returns to a contained crop, headline scales down */
-@media (max-width: 900px) {
+/* clean: below the editorial split the portrait drops to its OWN row under
+   the copy at a stable, contained size — instead of shrinking into a narrow
+   side column beside the text. This kicks in earlier than the shared 900px
+   breakpoint (at 1024px) so the photo never gets squeezed. Scoped to clean,
+   so bold/arcade keeps its own responsive hero untouched. */
+@media (max-width: 1024px) {
   [data-theme="clean"] .hero { min-height: 0; }
+  [data-theme="clean"] .hero__grid { grid-template-columns: 1fr; }
   [data-theme="clean"] .hero__stack {
     min-height: 0;
     max-width: 460px;
@@ -1969,6 +1974,37 @@ body.lightbox-open { overflow: hidden; }
   z-index: 0;
 }
 [data-theme="clean"] .site-footer .wrap { position: relative; z-index: 1; }
+
+/* ---------- clean · section order ----------
+   Clean shows Product before Experience; bold/arcade keeps the DOM order
+   (Experience → Product). Done purely with flex `order`, so the shared
+   markup — and the content-data-layer that drives the cube nav / language
+   toggle — stays byte-for-byte identical for both themes; only the visual
+   order flips, scoped to clean. Every direct child gets an explicit order
+   so the two swapped sections move without disturbing anything else.
+   `:has(> .hero)` pins the flex container to the one-pager only — the
+   case-study pages share the same #main id but have no .hero child, so
+   they stay in normal flow. `order` is inert without a flex parent, so
+   the child rules below need no extra guard. */
+[data-theme="clean"] #main:has(> .hero) { display: flex; flex-direction: column; }
+[data-theme="clean"] #main > .hero        { order: 1; }
+[data-theme="clean"] #main > .intro       { order: 2; }
+[data-theme="clean"] #main > .product     { order: 3; }
+[data-theme="clean"] #main > .work        { order: 4; }
+[data-theme="clean"] #main > .social      { order: 5; }
+[data-theme="clean"] #main > .photography { order: 6; }
+[data-theme="clean"] #main > .about       { order: 7; }
+[data-theme="clean"] #main > .collabs     { order: 8; }
+[data-theme="clean"] #main > .site-footer { order: 9; }
+
+/* keep the mono section indices in sequence after the swap (clean only):
+   Product reads (01), Experience (02). font-size:0 collapses the literal
+   text node; the ::before carries the swapped label in the same styling
+   (mono / pink-deep are inherited from .sec-index). */
+[data-theme="clean"] .product .sec-index,
+[data-theme="clean"] .work .sec-index { font-size: 0; }
+[data-theme="clean"] .product .sec-index::before { content: "( 01 )"; font-size: .8rem; }
+[data-theme="clean"] .work .sec-index::before { content: "( 02 )"; font-size: .8rem; }
 
 /* ---------- clean sections ---------- */
 [data-theme="clean"] .intro { background: var(--paper-hi); }
@@ -2076,6 +2112,50 @@ body.lightbox-open { overflow: hidden; }
   opacity: 0;
   transition: opacity .3s ease-out;
   will-change: transform;
+}
+
+/* ---------- clean · scroll-coupled pink glow (touch only) ----------
+   On coarse-pointer / touch devices there is no cursor to carry the clean
+   theme's pink light, so main.js couples the same signature glow to scroll
+   instead: a fixed pink light bleeding in from the right edge, faded in
+   once the hero is scrolled past and held until the footer, while whichever
+   section it currently sweeps over lights up. main.js adds the
+   `scroll-glow-on` root class ONLY when the theme is clean AND the device
+   matches (hover: none) and (pointer: coarse) — that class gates every rule
+   below, so none of this appears on desktop / with a mouse / in bold. The
+   glow sits below the header (z 100) and paper grain (z 120) but above the
+   opaque section content, so text and nav stay clean. */
+html.scroll-glow-on .scroll-glow {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  width: 80vw;
+  height: 80vw;
+  max-width: 640px;
+  max-height: 640px;
+  /* hidden: parked further off the right edge so it glides IN from the
+     right as it fades up (both transitions are scroll-coupled via .is-visible) */
+  transform: translate(60%, -50%);
+  background: radial-gradient(circle at 50% 50%,
+    rgba(255, 128, 203, .34) 0%,
+    rgba(255, 128, 203, .16) 34%,
+    rgba(255, 128, 203, 0) 68%);
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity .6s ease-out, transform .6s ease-out;
+}
+html.scroll-glow-on .scroll-glow.is-visible {
+  opacity: 1;
+  transform: translate(42%, -50%);
+}
+
+/* the section currently under the light glows softly from the right,
+   echoing the fixed glow's position; ScrollTrigger toggles .is-lit as the
+   page scrolls, so the highlight stays in sync with the glow's band */
+html.scroll-glow-on .glow-section { transition: box-shadow .5s ease-out; }
+html.scroll-glow-on .glow-section.is-lit {
+  box-shadow: inset -150px 0 240px -80px rgba(255, 128, 203, .24);
 }
 
 /* ============================================================
