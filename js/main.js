@@ -243,6 +243,29 @@
       btn.setAttribute("aria-expanded", "false");
       btn.focus();
     }
+
+    /* ---- kill the "click-through" ghost click (touch only) ----
+       A face is chosen on pointerup, and closeCube() removes the overlay in
+       that same handler. On touch the browser then fires a synthesized click
+       at the same coordinates — and with the overlay already gone it lands on
+       whatever project card sits underneath, opening it as well. (Desktop is
+       immune: there the click target is derived from the still-present overlay
+       at mousedown/up, not re-hit-tested afterwards.) So right before we close,
+       we swallow exactly one upcoming click in the capture phase. */
+    function swallowNextClick() {
+      var cleanup = function () {
+        window.removeEventListener("click", kill, true);
+        clearTimeout(timer);
+      };
+      var kill = function (ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        cleanup();
+      };
+      var timer = setTimeout(cleanup, 700);
+      window.addEventListener("click", kill, true);
+    }
+
     btn.addEventListener("click", function () { if (!expanded) openCube(); });
 
     /* nudge the docked cube slightly larger on hover/focus so it reads as
@@ -299,6 +322,7 @@
       if (!face) return;
       var anchor = face.getAttribute("data-face-target");
       var section = document.querySelector(anchor);
+      swallowNextClick();
       closeCube();
       if (section) section.scrollIntoView({ behavior: stillCube ? "auto" : "smooth", block: "start" });
       else location.href = "home.html" + anchor;
@@ -937,19 +961,30 @@
   /* ---------- clean · scroll-coupled pink glow (touch only) ----------
      The clean theme's pink light trails the cursor on fine pointers; on
      coarse-pointer touch devices there is no cursor, so the same signature
-     glow is driven by scroll. It fades in once the hero is scrolled past,
-     rides the right edge until the footer, and lights up whichever section
-     it is currently sweeping over. Everything is coupled to scroll position
-     via ScrollTrigger (never :hover), so it works without a pointer. The
-     gate is a reliable feature test — (hover: none) and (pointer: coarse) —
-     not a viewport width, so a narrow desktop window is never mistaken for
-     a touch device. */
+     glow is driven by scroll. It fades in once the hero is scrolled past and
+     rides the right edge until the footer. Rather than washing whole sections,
+     the glow now interacts with each project block individually: as a card
+     crosses the glow's band (the viewport centre, where the fixed glow is
+     anchored) a pink light runs down that card's right edge, then flows back
+     out as the card leaves — one ScrollTrigger per card, so the effect is tied
+     to each block's own scroll position, not the page as a whole. Everything
+     is coupled to scroll position via ScrollTrigger (never :hover), so it
+     works without a pointer. The gate is a reliable feature test —
+     (hover: none) and (pointer: coarse) — not a viewport width, so a narrow
+     desktop window is never mistaken for a touch device. */
   if (themeClean &&
       window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
     var glowHero = document.querySelector(".hero");
     var glowFooter = document.querySelector(".site-footer");
-    var glowSections = gsap.utils.toArray("main > section:not(.hero)");
-    if (glowHero && glowFooter && glowSections.length) {
+    /* the project blocks the glow hugs: product tiles, experience rows and
+       the social collage cards (the visible surface there is the inner .card,
+       which is the rounded, overflow-clipped element) */
+    var glowCards = [];
+    gsap.utils.toArray(".product-card, .work-row, .collage-card").forEach(function (card) {
+      var surface = card.classList.contains("collage-card") ? card.querySelector(".card") : card;
+      if (surface) glowCards.push(surface);
+    });
+    if (glowHero && glowFooter && glowCards.length) {
       document.documentElement.classList.add("scroll-glow-on");
 
       var scrollGlow = document.createElement("div");
@@ -969,16 +1004,27 @@
         }
       });
 
-      /* one section at a time lights as it crosses the glow's band —
-         the viewport centre, matching the fixed glow's vertical anchor */
-      glowSections.forEach(function (sec) {
-        sec.classList.add("glow-section");
+      /* each card carries its own decorative edge overlay (the cards' ::after
+         is already spent on the hover sheen, so this is a real child element).
+         As the card is swept from "top center" to "bottom center", progress
+         drives --edge 0→1, moving the bright node down the card's right edge;
+         is-edge-lit fades the whole overlay in only while the card is in the
+         band, so the light flows in, tracks the edge, then flows back out. */
+      glowCards.forEach(function (card) {
+        card.classList.add("glow-card");
+        var edge = document.createElement("span");
+        edge.className = "glow-card__edge";
+        edge.setAttribute("aria-hidden", "true");
+        card.appendChild(edge);
         ScrollTrigger.create({
-          trigger: sec,
+          trigger: card,
           start: "top center",
           end: "bottom center",
           onToggle: function (self) {
-            sec.classList.toggle("is-lit", self.isActive);
+            card.classList.toggle("is-edge-lit", self.isActive);
+          },
+          onUpdate: function (self) {
+            card.style.setProperty("--edge", self.progress.toFixed(4));
           }
         });
       });

@@ -39,12 +39,16 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    .lp-stage { position: fixed; inset: 0; }
+    /* the landing never scrolls (body is overflow:hidden / 100vh), so we can
+       hand every touch gesture to JS — touch-action:none stops the browser
+       claiming a horizontal drag for its own back/forward / overscroll
+       gesture, which used to fire touchcancel and kill the swipe-to-choose. */
+    .lp-stage { position: fixed; inset: 0; touch-action: none; }
 
     /* ---- the two halves. Both cover the viewport; clip-path splits them at
          --split, so the dither canvas never needs to resize when the split moves.
          clip-path also clips hit-testing, so each half only reacts on its own side. ---- */
-    .lp-panel { position: fixed; inset: 0; cursor: pointer; overflow: hidden; }
+    .lp-panel { position: fixed; inset: 0; cursor: pointer; overflow: hidden; touch-action: none; }
     .lp-bold  { background: var(--bold-bg);    clip-path: inset(0 calc(100% - var(--split)) 0 0); }
     .lp-clean { background: var(--clean-paper); clip-path: inset(0 0 0 var(--split)); }
 
@@ -421,38 +425,53 @@
     /* ---------- touch: hover effects on finger + swipe-to-choose ----------
        Touch devices have no hover, so the existing divider / dither / blob
        reactions are also driven by finger tap & drag, and a horizontal swipe
-       selects a side (swipe left → bold, swipe right → clean) — mirroring a
-       tap on that half. Every listener is passive and never calls
-       preventDefault, so page scroll and system gestures stay unblocked. Only
-       touch events are used, so mouse mode is untouched. */
+       selects a side (swipe left → bold, swipe right → clean, matching the
+       on-screen "← bold · clean →" hint).
+
+       Why the swipe used to do nothing: with no touch-action set, the browser
+       could claim a horizontal drag for its own gesture and fire touchcancel,
+       which flipped `tracking` off before touchend ran — so the distance check
+       in touchend never fired. The fix is two-fold: `.lp-stage`/`.lp-panel`
+       now set touch-action:none (safe — the landing never scrolls), and the
+       swipe is evaluated during touchmove so it fires the instant the gesture
+       is unambiguous, never depending on a clean touchend. touchend keeps a
+       fallback check for fast flicks; a non-swipe falls through to the native
+       click handler as a tap. Listeners stay passive (touch-action does the
+       gesture-blocking), so mouse mode is untouched. */
     (function () {
-      var sx = 0, sy = 0, tracking = false;
-      var SWIPE_DIST = 60;   // min horizontal travel to count as a swipe (px)
+      var sx = 0, sy = 0, tracking = false, swiped = false;
+      var SWIPE_DIST = 55;   // min horizontal travel to count as a swipe (px)
+
+      function trySwipe(t) {
+        var dx = t.clientX - sx, dy = t.clientY - sy;
+        if (Math.abs(dx) > SWIPE_DIST && Math.abs(dx) > Math.abs(dy)) {
+          swiped = true; tracking = false;
+          choose(dx < 0 ? "bold" : "clean");
+          return true;
+        }
+        return false;
+      }
 
       stage.addEventListener("touchstart", function (e) {
         var t = e.changedTouches[0];
-        sx = t.clientX; sy = t.clientY; tracking = true;
+        sx = t.clientX; sy = t.clientY; tracking = true; swiped = false;
         /* tapping/holding a half lights it up, same as a mouse hover */
         if (!reduce) { inside = true; my = t.clientY; setSide(t.clientX); }
       }, { passive: true });
 
       stage.addEventListener("touchmove", function (e) {
-        if (reduce || !tracking) return;
+        if (!tracking) return;
         var t = e.changedTouches[0];
-        my = t.clientY; setSide(t.clientX);   // dragging glides the divider + effects
+        if (trySwipe(t)) return;               // fire the moment a swipe is clear
+        if (!reduce) { my = t.clientY; setSide(t.clientX); }   // else glide divider
       }, { passive: true });
 
       stage.addEventListener("touchend", function (e) {
-        if (!tracking) return;
+        if (!tracking) return;                 // already handled mid-move
         tracking = false;
-        var t = e.changedTouches[0];
-        var dx = t.clientX - sx, dy = t.clientY - sy;
-        /* a horizontal swipe navigates; anything else is treated as a tap and
-           falls through to the native click handler, so just ease back home */
-        if (Math.abs(dx) > SWIPE_DIST && Math.abs(dx) > Math.abs(dy)) {
-          choose(dx < 0 ? "bold" : "clean");
-          return;
-        }
+        if (trySwipe(e.changedTouches[0])) return;   // fallback for fast flicks
+        /* not a swipe → treat as a tap and fall through to the native click
+           handler; just ease the visuals back home */
         if (!reduce) reset();
       }, { passive: true });
 

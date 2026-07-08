@@ -2150,13 +2150,33 @@ html.scroll-glow-on .scroll-glow.is-visible {
   transform: translate(42%, -50%);
 }
 
-/* the section currently under the light glows softly from the right,
-   echoing the fixed glow's position; ScrollTrigger toggles .is-lit as the
-   page scrolls, so the highlight stays in sync with the glow's band */
-html.scroll-glow-on .glow-section { transition: box-shadow .5s ease-out; }
-html.scroll-glow-on .glow-section.is-lit {
-  box-shadow: inset -150px 0 240px -80px rgba(255, 128, 203, .24);
+/* per-card edge glow: as a project block crosses the fixed glow's band, a
+   pink light runs down its right edge, then flows back out. main.js appends a
+   .glow-card__edge child to each block and drives --edge (0 = top … 1 =
+   bottom) from that card's own ScrollTrigger, toggling .is-edge-lit while the
+   card is in the band. The overlay is inset:0 so it can never spill past a
+   card that clips its overflow (e.g. the collage .card); the light is painted
+   hard against the right edge — a bright node at --edge plus a soft vertical
+   seam — so it reads as the gradient tracing the block's edge, not a wash. */
+html.scroll-glow-on .glow-card { position: relative; }
+html.scroll-glow-on .glow-card__edge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .4s ease-out;
+  z-index: 4;
+  background:
+    radial-gradient(42% 26% at 100% calc(var(--edge, 0) * 100%),
+      rgba(255, 128, 203, .85) 0%,
+      rgba(255, 128, 203, .30) 55%,
+      rgba(255, 128, 203, 0) 80%),
+    linear-gradient(to left,
+      rgba(255, 128, 203, .28) 0%,
+      rgba(255, 128, 203, 0) 22%);
 }
+html.scroll-glow-on .glow-card.is-edge-lit .glow-card__edge { opacity: 1; }
 
 /* ============================================================
    Overflow guard — no horizontal scroll, ever
