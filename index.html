@@ -405,6 +405,62 @@
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(p === boldPanel ? "bold" : "clean"); }
       });
     });
+
+    /* ---------- bug fix: revive the landing after a Back navigation ----------
+       choose() latches `navigating = true` and never clears it. When the page
+       is restored from the bfcache on Back, that stale flag survives in memory,
+       so every later choose() bails out and the two halves stop being
+       selectable — while the pointer/touch visuals keep running, because they
+       never consult the flag. Clearing it on every pageshow (bfcache restores
+       included) makes selection reliable again after each Back. */
+    window.addEventListener("pageshow", function () {
+      navigating = false;
+      if (!reduce) reset();
+    });
+
+    /* ---------- touch: hover effects on finger + swipe-to-choose ----------
+       Touch devices have no hover, so the existing divider / dither / blob
+       reactions are also driven by finger tap & drag, and a horizontal swipe
+       selects a side (swipe left → bold, swipe right → clean) — mirroring a
+       tap on that half. Every listener is passive and never calls
+       preventDefault, so page scroll and system gestures stay unblocked. Only
+       touch events are used, so mouse mode is untouched. */
+    (function () {
+      var sx = 0, sy = 0, tracking = false;
+      var SWIPE_DIST = 60;   // min horizontal travel to count as a swipe (px)
+
+      stage.addEventListener("touchstart", function (e) {
+        var t = e.changedTouches[0];
+        sx = t.clientX; sy = t.clientY; tracking = true;
+        /* tapping/holding a half lights it up, same as a mouse hover */
+        if (!reduce) { inside = true; my = t.clientY; setSide(t.clientX); }
+      }, { passive: true });
+
+      stage.addEventListener("touchmove", function (e) {
+        if (reduce || !tracking) return;
+        var t = e.changedTouches[0];
+        my = t.clientY; setSide(t.clientX);   // dragging glides the divider + effects
+      }, { passive: true });
+
+      stage.addEventListener("touchend", function (e) {
+        if (!tracking) return;
+        tracking = false;
+        var t = e.changedTouches[0];
+        var dx = t.clientX - sx, dy = t.clientY - sy;
+        /* a horizontal swipe navigates; anything else is treated as a tap and
+           falls through to the native click handler, so just ease back home */
+        if (Math.abs(dx) > SWIPE_DIST && Math.abs(dx) > Math.abs(dy)) {
+          choose(dx < 0 ? "bold" : "clean");
+          return;
+        }
+        if (!reduce) reset();
+      }, { passive: true });
+
+      stage.addEventListener("touchcancel", function () {
+        tracking = false;
+        if (!reduce) reset();
+      }, { passive: true });
+    })();
   })();
   </script>
 </body>
