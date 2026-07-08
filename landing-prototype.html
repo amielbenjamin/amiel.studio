@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landing Prototype — AMIEL.STUDIO</title>
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Isolated split-screen landing prototype: bold (dither) ⇄ clean (gooey). Behaviour review only, no navigation wired.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700;900&family=Epilogue:ital,wght@0,400;0,500;0,700;1,400&family=Droid+Sans+Mono&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='50' height='100' fill='%230b0b0b'/%3E%3Crect x='50' width='50' height='100' fill='%23F4F4F5'/%3E%3C/svg%3E">
+
+  <!-- Isolated prototype: self-contained styles + script. Token VALUES mirror the
+       real system (pink #ff80cb, ink, clean off-white #F4F4F5 / #1A1A1A) so it reads
+       correct standalone. Once approved, this gets folded onto the shared system. -->
+  <style>
+    :root {
+      --pink: #ff80cb;
+      --pink-deep: #ee43a4;
+      --bold-bg: #0b0b0b;
+      --clean-paper: #F4F4F5;
+      --clean-ink: #1A1A1A;
+      --split: 50vw;                 /* driven live by JS (px) */
+      --font-display: "Unbounded", system-ui, sans-serif;
+      --font-body: "Epilogue", system-ui, sans-serif;
+      --font-mono: "Droid Sans Mono", "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bold-bg);
+      overflow: hidden;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .lp-stage { position: fixed; inset: 0; }
+
+    /* ---- the two halves. Both cover the viewport; clip-path splits them at
+         --split, so the dither canvas never needs to resize when the split moves.
+         clip-path also clips hit-testing, so each half only reacts on its own side. ---- */
+    .lp-panel { position: fixed; inset: 0; cursor: pointer; overflow: hidden; }
+    .lp-bold  { background: var(--bold-bg);    clip-path: inset(0 calc(100% - var(--split)) 0 0); }
+    .lp-clean { background: var(--clean-paper); clip-path: inset(0 0 0 var(--split)); }
+
+    .lp-dither { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+    /* clean gooey field */
+    .lp-goo { position: absolute; inset: 0; filter: url(#lp-goo); pointer-events: none; }
+    .lp-blob-follow { position: absolute; top: 0; left: 0; will-change: transform; }
+    .lp-blob {
+      position: absolute; border-radius: 50%; will-change: transform;
+      transform: translate(-50%, -50%);
+    }
+    .lp-blob--1 { width: 40vmin; height: 40vmin; left: 68vw; top: 42vh; background: #E4E4E7; }
+    .lp-blob--2 { width: 32vmin; height: 32vmin; left: 82vw; top: 60vh; background: #D2D2D7; }
+    .lp-blob--3 { width: 26vmin; height: 26vmin; left: 74vw; top: 30vh; background: #F8CDE6; } /* the single muted accent */
+
+    /* dimming veils — the non-hovered half sits back, quiet */
+    .lp-veil { position: absolute; inset: 0; pointer-events: none; opacity: .3; }
+    .lp-veil--bold  { background: var(--bold-bg); }
+    .lp-veil--clean { background: var(--clean-paper); }
+
+    /* per-side labels */
+    .lp-label { position: absolute; pointer-events: none; z-index: 4; }
+    .lp-label--bold {
+      left: clamp(1.5rem, 4vw, 4rem); bottom: clamp(1.5rem, 5vh, 3rem);
+      font-family: var(--font-display); font-weight: 900; font-size: clamp(1.6rem, 4vw, 3rem);
+      letter-spacing: .01em; color: var(--pink); text-transform: uppercase; line-height: .95;
+      text-shadow: 3px 3px 0 #000; transform-origin: left bottom;
+    }
+    .lp-label--bold small {
+      display: block; font-family: var(--font-mono); font-size: .8rem; font-weight: 400;
+      letter-spacing: .18em; color: #fff; opacity: .7; margin-top: .5rem; text-shadow: none;
+    }
+    .lp-label--clean {
+      right: clamp(1.5rem, 4vw, 4rem); bottom: clamp(1.5rem, 5vh, 3rem); text-align: right;
+      font-family: var(--font-body); font-weight: 500; font-size: clamp(1.4rem, 3.2vw, 2.4rem);
+      letter-spacing: -.01em; color: var(--clean-ink); line-height: 1;
+    }
+    .lp-label--clean small {
+      display: block; font-family: var(--font-mono); font-size: .74rem; font-weight: 400;
+      letter-spacing: .12em; opacity: .55; margin-top: .55rem; text-transform: uppercase;
+    }
+
+    /* ---- shared centred title: two identical copies, each clipped to its half,
+         so the wordmark reads white on the dark side and ink on the light side,
+         splitting exactly on the divider. Same font both copies → seamless. ---- */
+    .lp-titles { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+    .lp-title {
+      position: fixed; inset: 0; display: grid; place-content: center; text-align: center;
+      padding: 1rem;
+    }
+    .lp-title.is-bold  { clip-path: inset(0 calc(100% - var(--split)) 0 0); }
+    .lp-title.is-clean { clip-path: inset(0 0 0 var(--split)); }
+    .lp-eyebrow {
+      font-family: var(--font-mono); font-size: clamp(.7rem, 1.4vw, .85rem);
+      letter-spacing: .32em; text-transform: uppercase; opacity: .7; margin-bottom: 1.1rem;
+    }
+    .lp-name {
+      font-family: var(--font-body); font-weight: 700;
+      font-size: clamp(2.2rem, 8vw, 6rem); letter-spacing: -.03em; line-height: .95;
+    }
+    .lp-choose {
+      font-family: var(--font-mono); font-size: clamp(.7rem, 1.5vw, .9rem);
+      letter-spacing: .1em; margin-top: 1.4rem; opacity: .6;
+    }
+    .is-bold  .lp-eyebrow, .is-bold  .lp-name, .is-bold  .lp-choose { color: #fff; }
+    .is-clean .lp-eyebrow, .is-clean .lp-name, .is-clean .lp-choose { color: var(--clean-ink); }
+
+    /* the moving divider */
+    .lp-divider {
+      position: fixed; top: 0; bottom: 0; left: var(--split); width: 2px; z-index: 6;
+      transform: translateX(-1px); pointer-events: none;
+      background: linear-gradient(180deg, transparent, rgba(255,128,203,.9) 20%, rgba(255,128,203,.9) 80%, transparent);
+      mix-blend-mode: difference;
+    }
+
+    /* prototype ribbon */
+    .lp-ribbon {
+      position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 8;
+      font-family: var(--font-mono); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase;
+      background: #000; color: #fff; padding: .4rem .9rem; border-radius: 999px; opacity: .55;
+      pointer-events: none; mix-blend-mode: difference;
+    }
+
+    .lp-defs { position: absolute; width: 0; height: 0; }
+
+    :focus-visible { outline: 3px solid var(--pink); outline-offset: -6px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lp-divider { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- gooey filter -->
+  <svg class="lp-defs" aria-hidden="true">
+    <defs>
+      <filter id="lp-goo">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="blur"/>
+        <feColorMatrix in="blur" mode="matrix"
+          values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 16 -6" result="goo"/>
+        <feGaussianBlur in="goo" stdDeviation="4"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="lp-ribbon">prototype · behaviour only</div>
+
+  <div class="lp-stage" id="stage">
+
+    <!-- LEFT · BOLD -->
+    <section class="lp-panel lp-bold" id="boldPanel" role="button" tabindex="0"
+             aria-label="Enter the bold experience">
+      <canvas class="lp-dither" id="dither"></canvas>
+      <div class="lp-veil lp-veil--bold" id="veilBold"></div>
+      <div class="lp-label lp-label--bold" id="labelBold">
+        #BOLD
+        <small>die-cut studio</small>
+      </div>
+    </section>
+
+    <!-- RIGHT · CLEAN -->
+    <section class="lp-panel lp-clean" id="cleanPanel" role="button" tabindex="0"
+             aria-label="Enter the clean experience">
+      <div class="lp-goo" id="goo">
+        <div class="lp-blob-follow" data-ox="-40" data-oy="10"><div class="lp-blob lp-blob--1"></div></div>
+        <div class="lp-blob-follow" data-ox="70"  data-oy="60"><div class="lp-blob lp-blob--2"></div></div>
+        <div class="lp-blob-follow" data-ox="20"  data-oy="-50"><div class="lp-blob lp-blob--3"></div></div>
+      </div>
+      <div class="lp-veil lp-veil--clean" id="veilClean"></div>
+      <div class="lp-label lp-label--clean" id="labelClean">
+        clean
+        <small>quiet editorial</small>
+      </div>
+    </section>
+
+    <!-- shared centred wordmark (two clipped copies) -->
+    <div class="lp-titles" aria-hidden="true">
+      <div class="lp-title is-bold">
+        <div>
+          <div class="lp-eyebrow">select an experience</div>
+          <div class="lp-name">BENJAMIN&nbsp;AMIEL</div>
+          <div class="lp-choose">← bold&nbsp;&nbsp;·&nbsp;&nbsp;clean →</div>
+        </div>
+      </div>
+      <div class="lp-title is-clean">
+        <div>
+          <div class="lp-eyebrow">select an experience</div>
+          <div class="lp-name">BENJAMIN&nbsp;AMIEL</div>
+          <div class="lp-choose">← bold&nbsp;&nbsp;·&nbsp;&nbsp;clean →</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lp-divider" id="divider"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    var root       = document.documentElement;
+    var stage      = document.getElementById("stage");
+    var canvas     = document.getElementById("dither");
+    var ctx        = canvas.getContext("2d");
+    var veilBold   = document.getElementById("veilBold");
+    var veilClean  = document.getElementById("veilClean");
+    var labelBold  = document.getElementById("labelBold");
+    var labelClean = document.getElementById("labelClean");
+    var boldPanel  = document.getElementById("boldPanel");
+    var cleanPanel = document.getElementById("cleanPanel");
+    var follows    = Array.prototype.slice.call(document.querySelectorAll(".lp-blob-follow"));
+
+    var hasGSAP = typeof gsap !== "undefined";
+    var reduce  = window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+                  /[?&]noanim/.test(location.search);
+
+    /* ---------- 8×8 Bayer ordered-dither matrix ---------- */
+    var BAYER = [
+      [ 0,32, 8,40, 2,34,10,42],
+      [48,16,56,24,50,18,58,26],
+      [12,44, 4,36,14,46, 6,38],
+      [60,28,52,20,62,30,54,22],
+      [ 3,35,11,43, 1,33, 9,41],
+      [51,19,59,27,49,17,57,25],
+      [15,47, 7,39,13,45, 5,37],
+      [63,31,55,23,61,29,53,21]
+    ];
+    var CELL = 7;          // dither pixel size
+    var AMBIENT = 0.05;    // faint texture even when idle
+    var PINK = "#ff80cb";
+
+    /* ---------- live state ---------- */
+    var W = window.innerWidth, H = window.innerHeight;
+    var cols = 0, rows = 0;
+    var mx = W / 2, my = H / 2;          // pointer
+    var inside = false;                  // pointer over the stage
+    var boldActive = false, cleanActive = false;
+
+    var splitCur = W / 2, splitTarget = W / 2;   // divider x (px), lerped
+    var intCur = 0, intTarget = 0;               // dither reveal intensity, lerped
+
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W; canvas.height = H;
+      ctx.imageSmoothingEnabled = false;
+      cols = Math.ceil(W / CELL); rows = Math.ceil(H / CELL);
+      if (!inside) { splitTarget = splitCur = W / 2; }
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    /* ---------- divider setter (GSAP-eased when available) ---------- */
+    var setSplit = hasGSAP
+      ? gsap.quickTo({ v: splitCur }, "v", {
+          duration: 0.4, ease: "power3.out",
+          onUpdate: function () { root.style.setProperty("--split", this.targets()[0].v + "px"); }
+        })
+      : function (v) { splitCur = v; root.style.setProperty("--split", v + "px"); };
+
+    /* ---------- veils / labels ---------- */
+    function paintState() {
+      var boldVeil  = boldActive  ? 0 : (inside ? 0.6 : 0.32);
+      var cleanVeil = cleanActive ? 0 : (inside ? 0.6 : 0.32);
+      if (hasGSAP) {
+        gsap.to(veilBold,  { opacity: boldVeil,  duration: 0.3, ease: "power2.out" });
+        gsap.to(veilClean, { opacity: cleanVeil, duration: 0.3, ease: "power2.out" });
+        /* bold label pops hard; clean label rises softly */
+        gsap.to(labelBold,  { scale: boldActive ? 1.08 : 1, y: boldActive ? -6 : 0,
+                              opacity: boldActive ? 1 : 0.5, duration: 0.12, ease: "steps(3)" });
+        gsap.to(labelClean, { y: cleanActive ? -3 : 0, opacity: cleanActive ? 1 : 0.5,
+                              duration: 0.25, ease: "power2.out" });
+      } else {
+        veilBold.style.opacity = boldVeil;
+        veilClean.style.opacity = cleanVeil;
+        labelBold.style.opacity = boldActive ? 1 : 0.5;
+        labelClean.style.opacity = cleanActive ? 1 : 0.5;
+      }
+    }
+
+    /* ---------- gooey blob followers (GSAP quickTo, lagged per blob) ---------- */
+    var blobSetX = [], blobSetY = [];
+    if (hasGSAP) {
+      follows.forEach(function (f, i) {
+        var dur = 0.5 + i * 0.22;   // each blob trails a little more → gooey lag
+        blobSetX.push(gsap.quickTo(f, "x", { duration: dur, ease: "power2.out" }));
+        blobSetY.push(gsap.quickTo(f, "y", { duration: dur, ease: "power2.out" }));
+        /* slow autonomous drift so the field is never fully static */
+        if (!reduce) {
+          gsap.to(f.firstElementChild, {
+            xPercent: gsap.utils.random(-12, 12), yPercent: gsap.utils.random(-12, 12),
+            duration: gsap.utils.random(5, 8), repeat: -1, yoyo: true, ease: "sine.inOut"
+          });
+        }
+      });
+    }
+
+    function moveBlobs() {
+      if (!hasGSAP) return;
+      follows.forEach(function (f, i) {
+        var ox = parseFloat(f.dataset.ox) || 0;
+        var oy = parseFloat(f.dataset.oy) || 0;
+        if (cleanActive) {
+          /* pull toward the pointer, offset per blob so they cluster gooily */
+          blobSetX[i]((mx - W * 0.74) + ox);
+          blobSetY[i]((my - H * 0.5) + oy);
+        } else {
+          blobSetX[i](0);   // ease home
+          blobSetY[i](0);
+        }
+      });
+    }
+
+    /* ---------- dither render ---------- */
+    function drawDither() {
+      ctx.clearRect(0, 0, W, H);
+      var r = 360;                          // reveal radius around cursor
+      var path = new Path2D();
+      for (var gy = 0; gy < rows; gy++) {
+        var py = gy * CELL, cy = py + CELL / 2, row = BAYER[gy & 7];
+        for (var gx = 0; gx < cols; gx++) {
+          var px = gx * CELL, cx = px + CELL / 2;
+          var dx = cx - mx, dy = cy - my;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          var b = 1 - d / r; if (b < 0) b = 0; b *= b;      // sharp radial falloff
+          b = b * intCur + AMBIENT;
+          if (b > (row[gx & 7] + 0.5) / 64) path.rect(px, py, CELL, CELL);
+        }
+      }
+      ctx.fillStyle = PINK;
+      ctx.fill(path);
+    }
+
+    /* ---------- main loop ---------- */
+    function tick() {
+      splitCur += (splitTarget - splitCur) * 0.14;
+      intCur   += (intTarget - intCur) * 0.12;
+      if (!hasGSAP) root.style.setProperty("--split", splitCur + "px");
+      drawDither();
+      moveBlobs();
+      requestAnimationFrame(tick);
+    }
+
+    /* ---------- pointer / focus wiring ---------- */
+    function setSide(x) {
+      mx = x;
+      var norm = x / W;
+      boldActive  = norm < 0.5;
+      cleanActive = !boldActive;
+      /* hovered half grows toward 60/40; divider glides with the pointer */
+      var s = 50 + (0.5 - norm) * 24;       // 38 … 62
+      s = Math.max(38, Math.min(62, s));
+      splitTarget = W * s / 100;
+      if (hasGSAP) setSplit(splitTarget);
+      intTarget = boldActive ? 1 : 0.12;
+      paintState();
+    }
+
+    function reset() {
+      inside = false; boldActive = false; cleanActive = false;
+      splitTarget = W / 2;
+      if (hasGSAP) setSplit(splitTarget);
+      intTarget = 0;
+      paintState();
+    }
+
+    if (!reduce) {
+      window.addEventListener("pointermove", function (e) {
+        inside = true; my = e.clientY; setSide(e.clientX);
+      }, { passive: true });
+      window.addEventListener("pointerleave", reset);
+      document.addEventListener("mouseleave", reset);
+      /* keyboard: focusing a half activates its side + effect */
+      boldPanel.addEventListener("focus",  function () { inside = true; setSide(W * 0.25); });
+      cleanPanel.addEventListener("focus", function () { inside = true; setSide(W * 0.75); });
+      boldPanel.addEventListener("blur", reset);
+      cleanPanel.addEventListener("blur", reset);
+      paintState();
+      requestAnimationFrame(tick);
+    } else {
+      /* reduced motion: static, calm, centred split with a soft reveal at middle */
+      intCur = intTarget = 0.7; drawDither(); paintState();
+    }
+
+    /* ---------- click / activate ----------
+       STEP 4 will wire these to the real routes. Kept inert for the review. */
+    function choose(side) {
+      console.log("[landing-prototype] chose:", side);
+      // location.replace(side === "bold" ? "bold/index.html" : "clean/index.html");
+    }
+    boldPanel.addEventListener("click",  function () { choose("bold"); });
+    cleanPanel.addEventListener("click", function () { choose("clean"); });
+    [boldPanel, cleanPanel].forEach(function (p) {
+      p.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(p === boldPanel ? "bold" : "clean"); }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="clean">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>theme-clean — Style Guide · AMIEL.STUDIO</title>
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Design-token reference for theme-clean (Quiet Editorial). Dev reference page, not linked from the live site.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700;900&family=Epilogue:ital,wght@0,400;0,500;0,700;1,400&family=Droid+Sans+Mono&display=swap" rel="stylesheet">
+  <!-- shared, single stylesheet — this page mirrors the real clean tokens, never redefines them -->
+  <link rel="stylesheet" href="css/style.css?v=25">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%231A1A1A'/%3E%3Ctext x='50' y='66' font-size='52' text-anchor='middle' font-family='sans-serif' font-weight='bold' fill='%23fff'%3EA%3C/text%3E%3C/svg%3E">
+
+  <!-- Guide-only scaffolding. This is a dev/reference page (not a case study),
+       so it carries a small local layer for the guide chrome. Everything that
+       represents the design system itself is driven by the shared tokens
+       (var(--…)) from style.css — nothing here re-defines a token value. -->
+  <style>
+    .sg-wrap { max-width: 1100px; margin: 0 auto; padding: clamp(1.25rem, 4vw, 4rem); }
+
+    /* page masthead */
+    .sg-masthead { padding-block: clamp(3rem, 8vw, 6rem) clamp(2rem, 5vw, 3.5rem); border-bottom: var(--line); }
+    .sg-eyebrow { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; opacity: .6; }
+    .sg-masthead h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.4rem, 7vw, 4.5rem); letter-spacing: -.02em; margin-top: .6rem; }
+    .sg-masthead p { max-width: 56ch; margin-top: 1.1rem; font-size: 1.05rem; line-height: 1.65; opacity: .82; }
+
+    /* section rhythm */
+    .sg-section { padding-block: clamp(2.5rem, 6vw, 4.5rem); border-bottom: var(--line); }
+    .sg-section > h2 {
+      font-family: var(--font-mono); font-size: .82rem; letter-spacing: .1em;
+      text-transform: uppercase; opacity: .55; margin-bottom: 2rem;
+    }
+    .sg-section > h2 span { color: var(--ink); opacity: 1; }
+    .sg-lead { max-width: 60ch; font-size: 1rem; line-height: 1.6; opacity: .8; margin-bottom: 2rem; }
+
+    /* colour swatches */
+    .sg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+    .sw { border: var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--paper-hi); }
+    .sw__chip { height: 96px; border-bottom: var(--line); }
+    .sw__meta { padding: .7rem .8rem .8rem; }
+    .sw__name { font-weight: 700; font-size: .9rem; }
+    .sw__var { font-family: var(--font-mono); font-size: .72rem; opacity: .6; margin-top: .15rem; }
+    .sw__hex { font-family: var(--font-mono); font-size: .72rem; opacity: .85; margin-top: .35rem; text-transform: uppercase; }
+    .sw__role { font-size: .78rem; opacity: .7; margin-top: .4rem; line-height: 1.4; }
+
+    /* type specimens */
+    .sg-type { display: grid; gap: 1.75rem; }
+    .sg-type-row { display: grid; grid-template-columns: 90px 1fr; gap: 1.25rem; align-items: baseline; border-top: var(--line); padding-top: 1.25rem; }
+    .sg-type-row:first-child { border-top: 0; padding-top: 0; }
+    .sg-type-tag { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .04em; opacity: .55; line-height: 1.5; }
+    .t-display { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.4rem, 6vw, 4rem); letter-spacing: -.02em; line-height: 1.05; }
+    .t-h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -.01em; }
+    .t-h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.4rem; }
+    .t-body { font-size: 1.0625rem; line-height: 1.65; max-width: 62ch; }
+    .t-small { font-size: .9rem; line-height: 1.6; opacity: .8; }
+    .t-mono { font-family: var(--font-mono); font-size: .85rem; letter-spacing: .02em; }
+
+    /* generic specimen grid for components */
+    .sg-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .sg-grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
+    .sg-card-demo { padding: 1.5rem; }
+    .sg-card-demo h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.2rem; margin-bottom: .5rem; }
+    .sg-card-demo p { font-size: .92rem; line-height: 1.55; opacity: .82; }
+    .sg-card-demo .service__tools { font-family: var(--font-mono); font-size: .74rem; opacity: .6; margin-top: 1rem; }
+
+    /* glow accent demo — the single spot of colour in the clean system */
+    .sg-glow-demo {
+      position: relative; min-height: 220px; border: var(--line); border-radius: var(--radius-lg);
+      background: var(--paper-hi); overflow: hidden; display: grid; place-items: center; padding: 1.5rem; text-align: center;
+    }
+    .sg-glow-demo::before { content: ""; position: absolute; inset: -20%; background: var(--glow); }
+    .sg-glow-demo > * { position: relative; }
+
+    /* motion + shape token table */
+    .sg-tokens { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    .sg-tokens th, .sg-tokens td { text-align: left; padding: .7rem .9rem; border-bottom: var(--line); vertical-align: top; }
+    .sg-tokens th { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; opacity: .55; }
+    .sg-tokens td.k { font-family: var(--font-mono); font-size: .8rem; white-space: nowrap; }
+    .sg-tokens td.v { font-family: var(--font-mono); font-size: .8rem; opacity: .85; }
+
+    /* radius + shadow chips */
+    .sg-specimens { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.25rem; }
+    .sg-specimen { display: grid; gap: .7rem; place-items: center; text-align: center; }
+    .sg-box { width: 100%; height: 80px; background: var(--paper-hi); border: var(--line); }
+    .sg-box--r0 { border-radius: 0; }
+    .sg-box--r { border-radius: var(--radius); }
+    .sg-box--rlg { border-radius: var(--radius-lg); }
+    .sg-box--pill { border-radius: 999px; }
+    .sg-box--rest { box-shadow: var(--shadow-rest); border-color: transparent; }
+    .sg-box--lift { box-shadow: var(--shadow-lift); border-color: transparent; }
+    .sg-box--print { box-shadow: var(--shadow-print); border-color: transparent; }
+    .sg-specimen span { font-family: var(--font-mono); font-size: .72rem; opacity: .7; }
+
+    .sg-foot { padding-block: 2.5rem 4rem; font-family: var(--font-mono); font-size: .78rem; opacity: .5; }
+    .sg-foot a { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <main id="main" class="sg-wrap">
+
+    <!-- ============ MASTHEAD ============ -->
+    <header class="sg-masthead">
+      <p class="sg-eyebrow">theme-clean · reference</p>
+      <h1>Quiet Editorial</h1>
+      <p>
+        The second theme. Same content model, same DOM as theme-bold — the shift is
+        purely token and motion. A monochrome system built on off-white and charcoal,
+        hairline borders, generous line-height, and a single spot of colour that
+        enters only as soft light, never as a fill. Every value below is read from
+        the live <code class="t-mono">[data-theme="clean"]</code> tokens in
+        <code class="t-mono">css/style.css</code>.
+      </p>
+    </header>
+
+    <!-- ============ COLOUR ============ -->
+    <section class="sg-section">
+      <h2>01 — <span>Colour</span></h2>
+      <p class="sg-lead">
+        A neutral grayscale base. The legacy <code class="t-mono">--pink*</code> slots
+        resolve to ink and grey, so every inherited reference reads monochrome — no hot
+        pink, no clay. Colour arrives through one gradient only (see 04).
+      </p>
+      <div class="sg-swatches">
+        <div class="sw">
+          <div class="sw__chip" style="background: var(--paper)"></div>
+          <div class="sw__meta">
+            <div class="sw__name">Paper</div>
+            <div class="sw__var">--paper</div>
+            <div class="sw__hex">#F4F4F5</div>
+            <div class="sw__role">Base surface / page background</div>
+          </div>
+        </div>
+        <div class="sw">
+          <div class="sw__chip" style="background: var(--paper-hi)"></div>
+          <div class="sw__meta">
+            <div class="sw__name">Paper Hi</div>
+            <div class="sw__var">--paper-hi</div>
+            <div class="sw__hex">#FCFCFD</div>
+            <div class="sw__role">Raised surfaces / cards</div>
+          </div>
+        </div>
+        <div class="sw">
+          <div class="sw__chip" style="background: var(--white)"></div>
+          <div class="sw__meta">
+            <div class="sw__name">White</div>
+            <div class="sw__var">--white</div>
+            <div class="sw__hex">#FFFFFF</div>
+            <div class="sw__role">Pure white fills</div>
+          </div>
+        </div>
+        <div class="sw">
+          <div class="sw__chip" style="background: var(--pink-soft)"></div>
+          <div class="sw__meta">
+            <div class="sw__name">Tint</div>
+            <div class="sw__var">--pink-soft</div>
+            <div class="sw__hex">#E7E7EA</div>
+            <div class="sw__role">Light grey tint / dividers</div>
+          </div>
+        </div>
+        <div class="sw">
+          <div class="sw__chip" style="background: var(--pink-deep)"></div>
+          <div class="sw__meta">
+            <div class="sw__name">Emphasis</div>
+            <div class="sw__var">--pink-deep</div>
+            <div class="sw__hex">#3A3A3D</div>
+            <div class="sw__role">Dark grey emphasis / hover</div>
+          </div>
+        </div>
+        <div class="sw">
+          <div class="sw__chip" style="background: var(--ink)"></div>
+          <div class="sw__meta">
+            <div class="sw__name">Ink</div>
+            <div class="sw__var">--ink / --pink</div>
+            <div class="sw__hex">#1A1A1A</div>
+            <div class="sw__role">Primary text / solid accent</div>
+          </div>
+        </div>
+        <div class="sw">
+          <div class="sw__chip" style="background: var(--navy)"></div>
+          <div class="sw__meta">
+            <div class="sw__name">Charcoal</div>
+            <div class="sw__var">--navy</div>
+            <div class="sw__hex">#17171A</div>
+            <div class="sw__role">Dark contrast blocks</div>
+          </div>
+        </div>
+        <div class="sw">
+          <div class="sw__chip" style="background: var(--navy-ink)"></div>
+          <div class="sw__meta">
+            <div class="sw__name">Charcoal Ink</div>
+            <div class="sw__var">--navy-ink</div>
+            <div class="sw__hex">#101012</div>
+            <div class="sw__role">Deepest dark / footer</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TYPE ============ -->
+    <section class="sg-section">
+      <h2>02 — <span>Typography</span></h2>
+      <p class="sg-lead">
+        Epilogue leads both display and body — the arcade stacking of theme-bold is
+        replaced by a single quiet grotesk with generous line-height. Droid Sans Mono
+        carries labels, indices and metadata.
+      </p>
+      <div class="sg-type">
+        <div class="sg-type-row">
+          <div class="sg-type-tag">Display<br>Epilogue 700<br>clamp 2.4–4rem</div>
+          <div class="t-display">Interdisciplinary designer &amp; project lead</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-tag">Heading 2<br>Epilogue 700</div>
+          <div class="t-h2">Technical precision, social dynamics</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-tag">Heading 3<br>Epilogue 500</div>
+          <div class="t-h3">3D design &amp; engineering</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-tag">Body<br>Epilogue 400<br>1.0625rem / 1.65</div>
+          <div class="t-body">Product development from first sketch to production-ready CAD and photoreal rendering. Movement confirms interaction; it is never the show itself.</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-tag">Small<br>Epilogue 400</div>
+          <div class="t-small">Supporting copy, captions and secondary notes sit at reduced size and opacity.</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-tag">Mono<br>Droid Sans Mono</div>
+          <div class="t-mono">(01) — index · label · Fusion360 · Solidworks · Blender</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ACCENT / GLOW ============ -->
+    <section class="sg-section">
+      <h2>03 — <span>Accent light</span></h2>
+      <p class="sg-lead">
+        The only colour in the system. The existing brand pink (<code class="t-mono">#ff80cb</code>)
+        survives solely as a soft radial wash — <code class="t-mono">--glow</code> — layered behind
+        surfaces at low opacity. It is light, not paint: never a border, fill or text colour.
+      </p>
+      <div class="sg-glow-demo">
+        <div>
+          <div class="t-h3" style="font-weight:500">A single spot of colour</div>
+          <p class="t-small" style="margin-top:.5rem">var(--glow) · rgba(255,128,203, .34 → 0)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMPONENTS ============ -->
+    <section class="sg-section">
+      <h2>04 — <span>Components</span></h2>
+      <p class="sg-lead">
+        The same primitives as theme-bold, re-skinned by the clean tokens: flat fills,
+        hairline borders, <code class="t-mono">2px</code> radius, no offset drop-shadow,
+        no tilt, no spring.
+      </p>
+
+      <h3 class="t-h3" style="margin-bottom:1.1rem; font-weight:500">Buttons</h3>
+      <div class="sg-row" style="margin-bottom:2.5rem">
+        <a class="btn btn--pink" href="#" onclick="return false">see the work <span class="arr">→</span></a>
+        <a class="btn" href="#" onclick="return false">say hi <span class="arr">→</span></a>
+        <span class="chip">✳ mono chip</span>
+      </div>
+
+      <h3 class="t-h3" style="margin-bottom:1.1rem; font-weight:500">Cards</h3>
+      <div class="sg-grid-cards">
+        <article class="card sg-card-demo">
+          <h3>3D Design &amp; Engineering</h3>
+          <p>From first sketch to production-ready CAD and photoreal rendering.</p>
+          <p class="service__tools">Fusion360 · Solidworks · Blender</p>
+        </article>
+        <article class="card sg-card-demo">
+          <h3>Social Design Strategy</h3>
+          <p>Community-driven work at the intersection of art and urban life.</p>
+          <p class="service__tools">Participation · Curation · Research</p>
+        </article>
+        <article class="card sg-card-demo">
+          <h3>Project Management</h3>
+          <p>Budgets, stakeholders and interdisciplinary teams from vision to launch.</p>
+          <p class="service__tools">Fundings · Stakeholders · Launch</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ SHAPE ============ -->
+    <section class="sg-section">
+      <h2>05 — <span>Shape &amp; depth</span></h2>
+      <p class="sg-lead">
+        Corners are nearly square; depth is a whisper. Shadows are single soft layers,
+        never the hard offset blocks of theme-bold.
+      </p>
+      <div class="sg-specimens" style="margin-bottom:2rem">
+        <div class="sg-specimen"><div class="sg-box sg-box--r"></div><span>--radius · 2px</span></div>
+        <div class="sg-specimen"><div class="sg-box sg-box--rlg"></div><span>--radius-lg · 6px</span></div>
+        <div class="sg-specimen"><div class="sg-box sg-box--pill"></div><span>pill · 999px</span></div>
+      </div>
+      <div class="sg-specimens">
+        <div class="sg-specimen"><div class="sg-box sg-box--rlg sg-box--rest"></div><span>--shadow-rest</span></div>
+        <div class="sg-specimen"><div class="sg-box sg-box--rlg sg-box--lift"></div><span>--shadow-lift</span></div>
+        <div class="sg-specimen"><div class="sg-box sg-box--rlg sg-box--print"></div><span>--shadow-print</span></div>
+      </div>
+    </section>
+
+    <!-- ============ MOTION / TOKENS ============ -->
+    <section class="sg-section">
+      <h2>06 — <span>Motion &amp; token reference</span></h2>
+      <p class="sg-lead">
+        150–250ms ease-out for UI. No bounce, no big parallax. In JS,
+        <code class="t-mono">themeClean</code> swaps the reveal easing from
+        <code class="t-mono">back.out(1.5)</code> to <code class="t-mono">power2.out</code>.
+      </p>
+      <div style="overflow-x:auto">
+        <table class="sg-tokens">
+          <thead>
+            <tr><th>Token</th><th>Value</th><th>Role</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="k">--font-display</td><td class="v">"Epilogue"</td><td>Display face (bold uses Unbounded)</td></tr>
+            <tr><td class="k">--font-body</td><td class="v">"Epilogue"</td><td>Body copy</td></tr>
+            <tr><td class="k">--font-mono</td><td class="v">"Droid Sans Mono"</td><td>Labels, indices, metadata</td></tr>
+            <tr><td class="k">--line</td><td class="v">1px solid #E5E5E8</td><td>Hairline borders / dividers</td></tr>
+            <tr><td class="k">--radius</td><td class="v">2px</td><td>Default corner</td></tr>
+            <tr><td class="k">--radius-lg</td><td class="v">6px</td><td>Cards / larger surfaces</td></tr>
+            <tr><td class="k">--ease-spring</td><td class="v">cubic-bezier(.22, 1, .36, 1)</td><td>Ease-out, no overshoot</td></tr>
+            <tr><td class="k">--shadow-rest</td><td class="v">0 1px 2px …/.05</td><td>Resting elevation</td></tr>
+            <tr><td class="k">--shadow-lift</td><td class="v">0 6px 24px -8px …/.14</td><td>Hover / raised</td></tr>
+            <tr><td class="k">--glow</td><td class="v">radial pink .34 → 0</td><td>The single accent wash</td></tr>
+            <tr><td class="k">--cursor-arrow</td><td class="v">auto</td><td>Native cursor (bold uses die-cut)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="sg-foot">
+      Dev reference · not linked from the live site · view live theme:
+      <a href="home.html?theme=clean">home.html?theme=clean</a> ·
+      <a href="home.html?theme=bold">?theme=bold</a>
+    </footer>
+
+  </main>
+</body>
+</html>
