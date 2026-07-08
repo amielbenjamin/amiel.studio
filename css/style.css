@@ -1272,6 +1272,8 @@ body.lightbox-open { overflow: hidden; }
 }
 .footer__col a:hover { opacity: 1; color: var(--pink); }
 .footer__col li { font-size: .95rem; opacity: .85; }
+.footer__col a.link-disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+.footer__col a.link-disabled:hover { opacity: .4; color: var(--white); }
 
 .footer__bottom {
   display: flex;
@@ -2069,6 +2071,13 @@ body.lightbox-open { overflow: hidden; }
 [data-theme="clean"] .about__portrait--b { transform: none; }
 [data-theme="clean"] .about__portraits:hover .about__portrait--a,
 [data-theme="clean"] .about__portraits:hover .about__portrait--b { transform: none; }
+@media (max-width: 900px) {
+  /* Stacked layout: anchor the portrait pair to the bottom of their box
+     instead of the top, same as .hero__portrait, so they hang flush with
+     the section's lower edge instead of floating with a gap above the text. */
+  [data-theme="clean"] .about__portrait--a { top: auto; bottom: 22%; }
+  [data-theme="clean"] .about__portrait--b { top: auto; bottom: 0; }
+}
 [data-theme="clean"] .cv-doc { transform: none; }
 [data-theme="clean"] .cv-doc__label {
   background: var(--paper-hi);
