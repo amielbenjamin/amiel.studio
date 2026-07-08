@@ -2156,3 +2156,18 @@ html, body {
 .site-header button {
     flex-shrink: 0 !important;
 }
+
+
+/* --- FIX FÜR DAS ÜBERLAPPENDE MENÜ AUF DEM HANDY --- */
+@media (max-width: 768px) {
+    .site-header {
+        position: absolute !important; 
+        top: 0 !important;
+        background: transparent !important;
+    }
+    
+    /* Sorgt dafür, dass der Inhalt nicht unter das Menü rutscht */
+    body {
+        padding-top: 100px !important; /* Wert ggf. anpassen, je nachdem wie hoch dein Menü ist */
+    }
+}
