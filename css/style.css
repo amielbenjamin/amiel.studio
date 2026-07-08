@@ -1517,6 +1517,16 @@ body.lightbox-open { overflow: hidden; }
   .work-row__num { left: 0; }
   .product-grid { grid-template-columns: 1fr; }
   .product-card:nth-child(n) { margin-top: 0; }
+
+  /* About overflow fix: the long skill chips are mono + white-space:nowrap,
+     so on narrow phones a single chip was wider than the viewport. Because a
+     `1fr` grid track can't shrink below its content, that stretched the whole
+     About column past the screen, and overflow-x:clip then sliced the bio and
+     chips off on the right. Let the chips wrap, let the column shrink to 0,
+     and break over-long words so the text always stays inside its container. */
+  .about__cols { grid-template-columns: minmax(0, 1fr); }
+  .about__bio { max-width: none; overflow-wrap: break-word; }
+  .skills .chip { white-space: normal; }
 }
 
 /* mobile: photography single column shows a curated subset via JS-free CSS */
@@ -2077,6 +2087,18 @@ body.lightbox-open { overflow: hidden; }
 [data-theme="clean"] .proj-hero--pink,
 [data-theme="clean"] .proj-hero--paper,
 [data-theme="clean"] .proj-hero--white { background: var(--paper); }
+/* clean · dezent corner accent on the shared project title block: a faint pink
+   glow rising from the bottom-right corner, reusing the brand pink at low
+   alpha. Layered as background-IMAGE so it sits over the paper fill set above
+   (comes later, same specificity, so it wins the image layer while the paper
+   colour stays). Clean only — bold's flat die-cut hero is untouched. This one
+   rule covers every project page, since they all share .proj-hero. */
+[data-theme="clean"] .proj-hero {
+  background-image: radial-gradient(115% 85% at 100% 100%,
+    rgba(255, 128, 203, .20) 0%,
+    rgba(255, 128, 203, .07) 32%,
+    rgba(255, 128, 203, 0) 62%);
+}
 [data-theme="clean"] .proj-hero--pink h1 { color: var(--ink); text-shadow: none; }
 [data-theme="clean"] .crumb { background: transparent; border-radius: var(--radius); }
 [data-theme="clean"] .crumb:hover { transform: none; box-shadow: none; background: var(--ink); color: var(--paper-hi); }
@@ -2114,69 +2136,56 @@ body.lightbox-open { overflow: hidden; }
   will-change: transform;
 }
 
-/* ---------- clean · scroll-coupled pink glow (touch only) ----------
+/* ---------- clean · continuous scroll gradient (touch only) ----------
    On coarse-pointer / touch devices there is no cursor to carry the clean
-   theme's pink light, so main.js couples the same signature glow to scroll
-   instead: a fixed pink light bleeding in from the right edge, faded in
-   once the hero is scrolled past and held until the footer, while whichever
-   section it currently sweeps over lights up. main.js adds the
-   `scroll-glow-on` root class ONLY when the theme is clean AND the device
-   matches (hover: none) and (pointer: coarse) — that class gates every rule
-   below, so none of this appears on desktop / with a mouse / in bold. The
-   glow sits below the header (z 100) and paper grain (z 120) but above the
-   opaque section content, so text and nav stay clean. */
-html.scroll-glow-on .scroll-glow {
+   theme's pink light, so main.js draws ONE continuous line down the right
+   edge, tied to scroll. It replaces the earlier two-part glow (a fixed blob
+   plus per-card nodes) that read as separate segments with a visible break:
+   now a single SVG stroke is drawn by one scrub tween across the whole content
+   run, so the gradient is seamless. main.js adds `scroll-glow-on` ONLY when
+   the theme is clean AND the device matches (hover: none) and (pointer:
+   coarse) — that class gates every rule below, so none of this shows on
+   desktop / with a mouse / in bold. The line sits below the header (z 100)
+   and paper grain (z 120), and is purely decorative (pointer-events: none). */
+html.scroll-glow-on .scroll-line {
   position: fixed;
-  top: 50%;
+  top: 0;
   right: 0;
-  width: 80vw;
-  height: 80vw;
-  max-width: 640px;
-  max-height: 640px;
-  /* hidden: parked further off the right edge so it glides IN from the
-     right as it fades up (both transitions are scroll-coupled via .is-visible) */
-  transform: translate(60%, -50%);
-  background: radial-gradient(circle at 50% 50%,
-    rgba(255, 128, 203, .34) 0%,
-    rgba(255, 128, 203, .16) 34%,
-    rgba(255, 128, 203, 0) 68%);
+  width: clamp(72px, 22vw, 150px);
+  height: 100vh;
+  height: 100dvh;
   pointer-events: none;
   z-index: 50;
-  opacity: 0;
-  transition: opacity .6s ease-out, transform .6s ease-out;
+  /* soft, single, weightless line */
+  filter: blur(0.6px) drop-shadow(0 0 6px rgba(255, 128, 203, 0.35));
 }
-html.scroll-glow-on .scroll-glow.is-visible {
-  opacity: 1;
-  transform: translate(42%, -50%);
-}
+html.scroll-glow-on .scroll-line__path { stroke-width: 3; }
 
-/* per-card edge glow: as a project block crosses the fixed glow's band, a
-   pink light runs down its right edge, then flows back out. main.js appends a
-   .glow-card__edge child to each block and drives --edge (0 = top … 1 =
-   bottom) from that card's own ScrollTrigger, toggling .is-edge-lit while the
-   card is in the band. The overlay is inset:0 so it can never spill past a
-   card that clips its overflow (e.g. the collage .card); the light is painted
-   hard against the right edge — a bright node at --edge plus a soft vertical
-   seam — so it reads as the gradient tracing the block's edge, not a wash. */
-html.scroll-glow-on .glow-card { position: relative; }
+/* per-block interaction: as the line passes a project block it grows a touch
+   (subtle — not a zoom) and its right edge takes a light, dezent pink tint.
+   main.js toggles .is-glow while the block is in the middle band. The tint
+   overlay is inset:0 so it can never spill past a block that clips its
+   overflow (e.g. the collage .card); the pink is intentionally faint so it
+   never overpowers the card art or text. */
+html.scroll-glow-on .glow-card {
+  position: relative;
+  transition: transform .55s var(--ease-spring, ease-out);
+}
+html.scroll-glow-on .glow-card.is-glow { transform: scale(1.018); }
 html.scroll-glow-on .glow-card__edge {
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
   opacity: 0;
-  transition: opacity .4s ease-out;
+  transition: opacity .5s ease-out;
   z-index: 4;
-  background:
-    radial-gradient(42% 26% at 100% calc(var(--edge, 0) * 100%),
-      rgba(255, 128, 203, .85) 0%,
-      rgba(255, 128, 203, .30) 55%,
-      rgba(255, 128, 203, 0) 80%),
-    linear-gradient(to left,
-      rgba(255, 128, 203, .28) 0%,
-      rgba(255, 128, 203, 0) 22%);
+  background: linear-gradient(to left,
+    rgba(255, 128, 203, .14) 0%,
+    rgba(255, 128, 203, .05) 24%,
+    rgba(255, 128, 203, 0) 46%);
 }
-html.scroll-glow-on .glow-card.is-edge-lit .glow-card__edge { opacity: 1; }
+html.scroll-glow-on .glow-card.is-glow .glow-card__edge { opacity: 1; }
 
 /* ============================================================
    Overflow guard — no horizontal scroll, ever

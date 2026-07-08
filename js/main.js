@@ -22,7 +22,9 @@
     var faceBg = cubeClean ? "#E7E7EA" : "var(--pink)";
     var faceBorder = cubeClean ? "2px solid rgba(20, 20, 24, .16)" : "3px solid var(--ink, #16161a)";
     var faceText = cubeClean ? "var(--ink, #1a1a1a)" : "var(--white, #fff)";
-    var faceHoverBg = "linear-gradient(150deg, rgba(255, 128, 203, .78) 0%, rgba(255, 128, 203, .22) 100%)";
+    /* clean hover: a white→pink wash (was black→pink). bold hover: the beige
+       paper token with black text — both defined by setActiveFace below. */
+    var faceHoverBg = "linear-gradient(150deg, rgba(255, 255, 255, .95) 0%, var(--pink) 100%)";
 
     var HALF = 80, PERSPECTIVE = 1400, STAGE = 340, SVG_SIZE = 360, CORNER_R = 10, STROKE = 9;
     var DOCK_SCALE = 0.17, DOCK_SIZE = 48;
@@ -135,6 +137,18 @@
       position: "relative", transformStyle: "preserve-3d"
     });
 
+    /* only one face is ever "active" (hovered on desktop, finger-over on
+       touch). setActiveFace lights the given face and unlights the previous
+       one; each face stashes its own on/off closures (colours differ per
+       theme) so this stays theme-agnostic. */
+    var activeFace = null;
+    function setActiveFace(f) {
+      if (activeFace === f) return;
+      if (activeFace && activeFace.__faceOff) activeFace.__faceOff();
+      activeFace = f;
+      if (f && f.__faceOn) f.__faceOn();
+    }
+
     FACES.forEach(function (face) {
       var f = document.createElement("div");
       f.setAttribute("data-face-target", face.target);
@@ -161,12 +175,26 @@
         fontFamily: "'Unbounded', sans-serif", textAlign: "center",
         padding: "0 8px", pointerEvents: "none"
       }, noSelect);
-      /* clean: hovering a face washes it with the pink gradient, echoing
-         the card hover-glow so the face reads as a clickable link */
-      if (cubeClean) {
-        f.addEventListener("pointerenter", function () { f.style.background = faceHoverBg; });
-        f.addEventListener("pointerleave", function () { f.style.background = faceBg; });
-      }
+      /* active-face styling: bold → beige paper face + black text; clean →
+         white→pink wash (text already ink). Stashed on the node so touch
+         hit-testing (which can't rely on pointerenter during a drag) can
+         drive the same states. */
+      f.__faceOn = function () {
+        if (cubeClean) {
+          f.style.background = faceHoverBg;
+        } else {
+          f.style.background = "var(--paper)";
+          tag.style.color = "var(--ink)";
+          label.style.color = "var(--ink)";
+        }
+      };
+      f.__faceOff = function () {
+        f.style.background = faceBg;
+        tag.style.color = faceText;
+        label.style.color = faceText;
+      };
+      f.addEventListener("pointerenter", function () { setActiveFace(f); });
+      f.addEventListener("pointerleave", function () { if (activeFace === f) setActiveFace(null); });
       f.appendChild(tag);
       f.appendChild(label);
       scene.appendChild(f);
@@ -232,6 +260,7 @@
     }
     function closeCube() {
       expanded = false;
+      setActiveFace(null);
       overlay.hidden = true;
       overlay.style.display = "none";
       btn.appendChild(stage);
@@ -278,8 +307,9 @@
     btn.addEventListener("pointerleave", function () { dockScale(DOCK_SCALE); });
     btn.addEventListener("focus", function () { dockScale(DOCK_SCALE_HOVER); });
     btn.addEventListener("blur", function () { dockScale(DOCK_SCALE); });
-    /* the ✕ is the only way out — backdrop clicks and ESC stay inert so a
-       stray click while grabbing the cube can't dismiss the navigator */
+    /* two ways out: the ✕, or a tap on empty space beside the cube (handled in
+       pointerup). Only a *tap* (no drag) closes, so a stray release while
+       rotating the cube can't dismiss the navigator. ESC stays inert. */
     closeBtn.addEventListener("click", closeCube);
 
     var rotX = -20, rotY = 30;
@@ -293,6 +323,12 @@
     /* drag to rotate — anywhere on the open overlay (except the ✕),
        so the cube steers easily without having to grab it precisely */
     var draggingCube = false, movedCube = false, prevX = 0, prevY = 0;
+    /* touch has no hover, so light the face under the finger by hit-testing */
+    function touchFaceAt(e) {
+      if (!e.pointerType || e.pointerType === "mouse") return;
+      var h = document.elementFromPoint(e.clientX, e.clientY);
+      setActiveFace(h && h.closest ? h.closest("[data-face-target]") : null);
+    }
     overlay.addEventListener("pointerdown", function (e) {
       if (e.target === closeBtn) return;
       e.preventDefault();
@@ -300,6 +336,7 @@
       movedCube = false;
       prevX = e.clientX; prevY = e.clientY;
       overlay.style.cursor = "grabbing";
+      touchFaceAt(e);
     });
     stage.addEventListener("dragstart", function (e) { e.preventDefault(); });
     window.addEventListener("pointermove", function (e) {
@@ -310,16 +347,22 @@
       rotX -= dy * 0.4;
       prevX = e.clientX; prevY = e.clientY;
       updateCube();
+      touchFaceAt(e);
     });
     window.addEventListener("pointerup", function (e) {
       if (!draggingCube) return;
       draggingCube = false;
       overlay.style.cursor = "grab";
-      if (movedCube) return;
+      if (movedCube) { setActiveFace(null); return; }
       /* tap without drag = navigate to the tapped face's section */
       var hit = document.elementFromPoint(e.clientX, e.clientY);
       var face = hit && hit.closest ? hit.closest("[data-face-target]") : null;
-      if (!face) return;
+      if (!face) {
+        /* a tap on empty space beside the cube closes the navigator (the ✕
+           still works too); a tap on the cube body between faces leaves it open */
+        if (hit && !stage.contains(hit)) { swallowNextClick(); closeCube(); }
+        return;
+      }
       var anchor = face.getAttribute("data-face-target");
       var section = document.querySelector(anchor);
       swallowNextClick();
@@ -958,27 +1001,26 @@
     });
   }
 
-  /* ---------- clean · scroll-coupled pink glow (touch only) ----------
-     The clean theme's pink light trails the cursor on fine pointers; on
+  /* ---------- clean · continuous scroll gradient (touch only) ----------
+     On fine pointers the clean theme's pink light trails the cursor; on
      coarse-pointer touch devices there is no cursor, so the same signature
-     glow is driven by scroll. It fades in once the hero is scrolled past and
-     rides the right edge until the footer. Rather than washing whole sections,
-     the glow now interacts with each project block individually: as a card
-     crosses the glow's band (the viewport centre, where the fixed glow is
-     anchored) a pink light runs down that card's right edge, then flows back
-     out as the card leaves — one ScrollTrigger per card, so the effect is tied
-     to each block's own scroll position, not the page as a whole. Everything
-     is coupled to scroll position via ScrollTrigger (never :hover), so it
-     works without a pointer. The gate is a reliable feature test —
-     (hover: none) and (pointer: coarse) — not a viewport width, so a narrow
-     desktop window is never mistaken for a touch device. */
+     pink is carried by ONE continuous line down the right edge instead. A
+     single SVG path is drawn by ONE scrub tween across the whole content run
+     (hero → footer) — a seamless, unbroken stroke, replacing the old two-part
+     glow (a fixed blob PLUS per-card nodes) that read as separate segments
+     with a visible break. As the line passes each project block, that block
+     grows a touch and takes a soft, light pink edge tint (its own
+     ScrollTrigger). Coupled to scroll position, never :hover, so it works
+     without a pointer. Gate is a reliable feature test — (hover: none) and
+     (pointer: coarse) — not a viewport width, so a narrow desktop window is
+     never mistaken for a touch device. */
   if (themeClean &&
       window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
     var glowHero = document.querySelector(".hero");
     var glowFooter = document.querySelector(".site-footer");
-    /* the project blocks the glow hugs: product tiles, experience rows and
-       the social collage cards (the visible surface there is the inner .card,
-       which is the rounded, overflow-clipped element) */
+    /* the project blocks the line interacts with: product tiles, experience
+       rows and the social collage cards (the visible surface there is the
+       inner .card, the rounded, overflow-clipped element) */
     var glowCards = [];
     gsap.utils.toArray(".product-card, .work-row, .collage-card").forEach(function (card) {
       var surface = card.classList.contains("collage-card") ? card.querySelector(".card") : card;
@@ -987,29 +1029,50 @@
     if (glowHero && glowFooter && glowCards.length) {
       document.documentElement.classList.add("scroll-glow-on");
 
-      var scrollGlow = document.createElement("div");
-      scrollGlow.className = "scroll-glow";
-      scrollGlow.setAttribute("aria-hidden", "true");
-      document.body.appendChild(scrollGlow);
+      /* one fixed SVG line on the right: a soft pink gradient stroke whose ends
+         fade to nothing. preserveAspectRatio=none stretches the wavy path to
+         the full viewport height, non-scaling-stroke keeps the width crisp at
+         any stretch, and pathLength=1 lets a single normalised dashoffset draw
+         the whole thing. */
+      var SVGNS = "http://www.w3.org/2000/svg";
+      var line = document.createElementNS(SVGNS, "svg");
+      line.setAttribute("class", "scroll-line");
+      line.setAttribute("aria-hidden", "true");
+      line.setAttribute("preserveAspectRatio", "none");
+      line.setAttribute("viewBox", "0 0 100 1000");
+      line.innerHTML =
+        '<defs><linearGradient id="scrollLineGrad" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#ff80cb" stop-opacity="0"/>' +
+          '<stop offset="0.12" stop-color="#ff80cb" stop-opacity="0.85"/>' +
+          '<stop offset="0.88" stop-color="#ff80cb" stop-opacity="0.85"/>' +
+          '<stop offset="1" stop-color="#ff80cb" stop-opacity="0"/>' +
+        '</linearGradient></defs>' +
+        '<path class="scroll-line__path" fill="none" stroke="url(#scrollLineGrad)" ' +
+          'pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" ' +
+          'vector-effect="non-scaling-stroke" stroke-linecap="round" ' +
+          'd="M78 0 C46 130 96 270 62 400 C34 520 92 640 66 780 C48 890 82 940 72 1000"/>';
+      document.body.appendChild(line);
 
-      /* visible from just past the hero (its bottom crosses mid-screen)
-         until the footer is reached (its top crosses mid-screen) */
-      ScrollTrigger.create({
-        trigger: glowHero,
-        start: "bottom center",
-        endTrigger: glowFooter,
-        end: "top center",
-        onToggle: function (self) {
-          scrollGlow.classList.toggle("is-visible", self.isActive);
+      /* pathLength=1 normalises the dash, so offset 1 → hidden, 0 → fully drawn.
+         Animate the ATTRIBUTE (always unitless) so this ONE tween draws the
+         whole line seamlessly across the entire scroll run. */
+      var linePath = line.querySelector(".scroll-line__path");
+      gsap.to(linePath, {
+        attr: { "stroke-dashoffset": 0 },
+        ease: "none",
+        scrollTrigger: {
+          trigger: glowHero,
+          start: "bottom 85%",
+          endTrigger: glowFooter,
+          end: "top 15%",
+          scrub: 0.6
         }
       });
 
-      /* each card carries its own decorative edge overlay (the cards' ::after
-         is already spent on the hover sheen, so this is a real child element).
-         As the card is swept from "top center" to "bottom center", progress
-         drives --edge 0→1, moving the bright node down the card's right edge;
-         is-edge-lit fades the whole overlay in only while the card is in the
-         band, so the light flows in, tracks the edge, then flows back out. */
+      /* per block: while it sits in the middle band the line is passing, grow
+         it a touch and give its right edge a gentle, light pink tint (both via
+         .is-glow — CSS eases them). One ScrollTrigger per card ties the effect
+         to that block's own scroll position; it is deliberately subtle. */
       glowCards.forEach(function (card) {
         card.classList.add("glow-card");
         var edge = document.createElement("span");
@@ -1018,13 +1081,10 @@
         card.appendChild(edge);
         ScrollTrigger.create({
           trigger: card,
-          start: "top center",
-          end: "bottom center",
+          start: "top 68%",
+          end: "bottom 32%",
           onToggle: function (self) {
-            card.classList.toggle("is-edge-lit", self.isActive);
-          },
-          onUpdate: function (self) {
-            card.style.setProperty("--edge", self.progress.toFixed(4));
+            card.classList.toggle("is-glow", self.isActive);
           }
         });
       });
