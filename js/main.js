@@ -1029,24 +1029,43 @@
     if (glowHero && glowFooter && glowCards.length) {
       document.documentElement.classList.add("scroll-glow-on");
 
-      /* per block: as it crosses the middle band while scrolling, grow it a
-         touch and give its right edge a gentle, light pink tint (both via
-         .is-glow — CSS eases them). One ScrollTrigger per card ties the effect
-         to that block's own scroll position; it is deliberately subtle. */
+      /* per block: the pink intensity is a bell curve of the block's distance
+         from the viewport centre — it eases up as the block nears the middle,
+         peaks dead centre, then eases back down, instead of an abrupt on/off.
+         Each block gets a wide ScrollTrigger (active the whole time it is on
+         screen); on every scroll frame we recompute a Gaussian of how far its
+         centre sits from the viewport centre and write it to --glow-i, which
+         CSS turns into the edge-tint opacity and a slight scale. */
+      var GLOW_SIGMA = 0.42;   // bell width (fraction of half-viewport) — larger = flatter, gentler curve
       glowCards.forEach(function (card) {
         card.classList.add("glow-card");
         var edge = document.createElement("span");
         edge.className = "glow-card__edge";
         edge.setAttribute("aria-hidden", "true");
         card.appendChild(edge);
+
+        function setGlow() {
+          var vh = window.innerHeight || document.documentElement.clientHeight;
+          if (!vh) return;
+          var r = card.getBoundingClientRect();
+          /* 0 when the block's centre is on the viewport centre, ≈1 when it is
+             a half-viewport away; the Gaussian decays smoothly past that */
+          var dist = Math.abs((r.top + r.height / 2) - vh / 2) / (vh / 2);
+          var g = Math.exp(-(dist * dist) / (2 * GLOW_SIGMA * GLOW_SIGMA));
+          card.style.setProperty("--glow-i", (g < 0.001 ? 0 : g).toFixed(3));
+        }
+
         ScrollTrigger.create({
           trigger: card,
-          start: "top 68%",
-          end: "bottom 32%",
-          onToggle: function (self) {
-            card.classList.toggle("is-glow", self.isActive);
-          }
+          start: "top bottom",
+          end: "bottom top",
+          onUpdate: setGlow,
+          onRefresh: setGlow,
+          /* off-screen: make sure the tint is fully gone at both extremes */
+          onLeave: function () { card.style.setProperty("--glow-i", "0"); },
+          onLeaveBack: function () { card.style.setProperty("--glow-i", "0"); }
         });
+        setGlow();
       });
     }
   }

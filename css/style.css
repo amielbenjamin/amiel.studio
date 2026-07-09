@@ -1569,6 +1569,12 @@ body.lightbox-open { overflow: hidden; }
   --pink-deep: #3A3A3D;    /* emphasis → dark grey         */
   --pink-soft: #E7E7EA;    /* tint → light grey            */
 
+  /* the one exception to the monochrome remap: a readable signature pink for
+     small, deliberate accents (section indices, tiny icons, marks). Used only
+     where explicitly opted in below — it never fills a surface. Reads clearly
+     as pink on both the off-white base and the charcoal photography block. */
+  --pink-accent: hsl(326, 85%, 60%);
+
   /* the single spot of colour, reused as a wash on cards / sections */
   --glow: radial-gradient(circle at 60% 60%,
             rgba(255, 128, 203, .34) 0%,
@@ -1685,8 +1691,16 @@ body.lightbox-open { overflow: hidden; }
   background: transparent;
   border: none;
   padding: .3rem 0;
-  color: var(--pink-deep);
+  color: var(--pink-accent);
 }
+
+/* ---------- clean · small pink accents ----------
+   A restrained set of pink touches so the monochrome base gains a little
+   warmth without becoming colourful: the section indices above, the hero
+   kicker number and keyword dots, the three service icons and the nav
+   sparkle. Applies on desktop and mobile alike. */
+[data-theme="clean"] .brand .spark { color: var(--pink-accent); }
+[data-theme="clean"] .service__glyph { color: var(--pink-accent); }
 
 /* tickers: the hero ribbon keeps #PRODUCTDESIGNER / #PROBLEMSOLVER
    visible (fixed requirement) — restyled as a quiet hairline strip;
@@ -1769,7 +1783,7 @@ body.lightbox-open { overflow: hidden; }
   color: var(--ink);
   opacity: .55;
 }
-[data-theme="clean"] .hero__kicker i { font-style: normal; margin-right: .9em; opacity: .85; }
+[data-theme="clean"] .hero__kicker i { font-style: normal; margin-right: .9em; color: var(--pink-accent); }
 
 /* the location eyebrow steps aside in the editorial hero */
 [data-theme="clean"] .hero__eyebrow { display: none; }
@@ -1847,6 +1861,16 @@ body.lightbox-open { overflow: hidden; }
   filter: grayscale(.6) contrast(1.03);
   transform: translateY(-5px);
 }
+/* touch: tapping an element fires a sticky :hover on touch devices, so on a
+   phone the hero portrait animated (lift + un-grayscale) as if it grew when
+   tapped. On touch it must stay put — pin it to its rest state (matches the
+   base values above). Desktop keeps its real hover lift. */
+@media (hover: none) {
+  [data-theme="clean"] .hero__stack:hover .hero__portrait {
+    filter: grayscale(1) contrast(1.03);
+    transform: none;
+  }
+}
 
 /* keyword line stays the quiet keeper of #PRODUCTDESIGNER etc. */
 .hero__keywords { display: none; }
@@ -1859,7 +1883,7 @@ body.lightbox-open { overflow: hidden; }
   color: var(--ink);
   opacity: .7;
 }
-[data-theme="clean"] .hero__keywords b { color: var(--ink); opacity: .35; font-weight: 400; }
+[data-theme="clean"] .hero__keywords b { color: var(--pink-accent); opacity: .8; font-weight: 400; }
 
 /* desktop: let the hero column stretch the full section height so the
    portrait sits ON the lower edge of the hero instead of floating,
@@ -2067,7 +2091,7 @@ body.lightbox-open { overflow: hidden; }
 }
 
 [data-theme="clean"] .photography .sec-title { color: var(--paper-hi); }
-[data-theme="clean"] .photography .sec-index { background: transparent; border: none; color: var(--pink); }
+[data-theme="clean"] .photography .sec-index { background: transparent; border: none; color: var(--pink-accent); }
 [data-theme="clean"] .photography .photo-carousel__track .print { border: none; border-radius: var(--radius); }
 
 [data-theme="clean"] .about { background: var(--paper-hi); }
@@ -2156,30 +2180,32 @@ body.lightbox-open { overflow: hidden; }
    device matches (hover: none) and (pointer: coarse) — that class gates every
    rule below, so none of this shows on desktop / with a mouse / in bold.
 
-   As a block crosses the middle band it grows a touch (subtle — not a zoom)
-   and its right edge takes a light, dezent pink tint. main.js toggles .is-glow
-   while the block is in the band. The tint overlay is inset:0 so it can never
-   spill past a block that clips its overflow (e.g. the collage .card); the
-   pink is intentionally faint so it never overpowers the card art or text. */
+   As a block nears the middle of the screen it grows a touch (subtle — not a
+   zoom) and its right edge takes a pink tint. main.js writes a bell-curve
+   intensity into --glow-i (0 → 1, peaking when the block is dead-centre), so
+   the effect rises and falls smoothly with scroll instead of snapping on/off.
+   Both the tint opacity and the scale read straight off --glow-i. The overlay
+   is inset:0 so it can never spill past a block that clips its overflow (e.g.
+   the collage .card). */
 html.scroll-glow-on .glow-card {
   position: relative;
-  transition: transform .55s var(--ease-spring, ease-out);
+  --glow-i: 0;
+  transform: scale(calc(1 + .028 * var(--glow-i)));
+  transition: transform .2s linear;
 }
-html.scroll-glow-on .glow-card.is-glow { transform: scale(1.018); }
 html.scroll-glow-on .glow-card__edge {
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity .5s ease-out;
+  opacity: var(--glow-i);
+  transition: opacity .2s linear;
   z-index: 4;
   background: linear-gradient(to left,
-    rgba(255, 128, 203, .14) 0%,
-    rgba(255, 128, 203, .05) 24%,
-    rgba(255, 128, 203, 0) 46%);
+    rgba(255, 128, 203, .40) 0%,
+    rgba(255, 128, 203, .18) 26%,
+    rgba(255, 128, 203, 0) 54%);
 }
-html.scroll-glow-on .glow-card.is-glow .glow-card__edge { opacity: 1; }
 
 /* ============================================================
    Overflow guard — no horizontal scroll, ever

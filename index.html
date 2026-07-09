@@ -92,6 +92,20 @@
       letter-spacing: .12em; opacity: .55; margin-top: .55rem; text-transform: uppercase;
     }
 
+    /* the eyebrow reads "select" on desktop (hover/click to choose) and
+       "swipe" on touch (the landing is swipe-only there). One copy is shown
+       per input type via the coarse-pointer query — content stays readable
+       without JS. */
+    .lp-eyebrow-touch { display: none; }
+    @media (hover: none) and (pointer: coarse) {
+      .lp-eyebrow-desk { display: none; }
+      .lp-eyebrow-touch { display: inline; }
+      /* on touch the two corner labels become a tap shortcut to their side
+         (an alternative to the swipe); everywhere else stays swipe-only, so
+         only these labels opt back into pointer events. */
+      .lp-label { pointer-events: auto; cursor: pointer; }
+    }
+
     /* ---- shared centred title: two identical copies, each clipped to its half,
          so the wordmark reads white on the dark side and ink on the light side,
          splitting exactly on the divider. Same font both copies → seamless. ---- */
@@ -186,14 +200,14 @@
     <div class="lp-titles" aria-hidden="true">
       <div class="lp-title is-bold">
         <div>
-          <div class="lp-eyebrow">select an experience</div>
+          <div class="lp-eyebrow"><span class="lp-eyebrow-desk">select an experience</span><span class="lp-eyebrow-touch">swipe an experience</span></div>
           <div class="lp-name">BENJAMIN&nbsp;AMIEL</div>
           <div class="lp-choose">designed by Benjamin Amiel</div>
         </div>
       </div>
       <div class="lp-title is-clean">
         <div>
-          <div class="lp-eyebrow">select an experience</div>
+          <div class="lp-eyebrow"><span class="lp-eyebrow-desk">select an experience</span><span class="lp-eyebrow-touch">swipe an experience</span></div>
           <div class="lp-name">BENJAMIN&nbsp;AMIEL</div>
           <div class="lp-choose">designed by Benjamin Amiel</div>
         </div>
@@ -429,6 +443,12 @@
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(p === boldPanel ? "bold" : "clean"); }
       });
     });
+    /* touch shortcut: a tap on the #bold / clean corner label commits to that
+       side directly — an alternative to the swipe. Only fires on coarse
+       pointers (the labels are pointer-events:auto only there, see CSS); on a
+       real drag no click is synthesized, so the swipe stays untouched. */
+    labelBold.addEventListener("click",  function () { if (coarse) choose("bold"); });
+    labelClean.addEventListener("click", function () { if (coarse) choose("clean"); });
 
     /* ---------- bug fix: revive the landing after a Back navigation ----------
        choose() latches `navigating = true` and never clears it. When the page
