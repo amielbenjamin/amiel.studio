@@ -39,7 +39,7 @@
       { label: "social", tag: "#SOCIALDESIGN", target: "#social", transform: "rotateY(180deg) translateZ(" + HALF + "px)" },
       { label: "photography", tag: "#MASTEROFDISASTER", target: "#photography", transform: "rotateY(-90deg) translateZ(" + HALF + "px)" },
       { label: "about", tag: "#PROJECTLEAD", target: "#about", transform: "rotateX(90deg) translateZ(" + HALF + "px)" },
-      { label: "say hi", tag: "#MAKER", target: "#contact", transform: "rotateX(-90deg) translateZ(" + HALF + "px)" }
+      { label: "amiel.studio", tag: "#MAKER", target: "portfolio-redesign.html", transform: "rotateX(-90deg) translateZ(" + HALF + "px)" }
     ];
 
     /* cube corners rotated + perspective-projected into 2D */
@@ -366,9 +366,10 @@
         return;
       }
       var anchor = face.getAttribute("data-face-target");
-      var section = document.querySelector(anchor);
       swallowNextClick();
       closeCube();
+      if (anchor.charAt(0) !== "#") { location.href = anchor; return; }
+      var section = document.querySelector(anchor);
       if (section) section.scrollIntoView({ behavior: stillCube ? "auto" : "smooth", block: "start" });
       else location.href = "home.html" + anchor;
     });
@@ -547,7 +548,6 @@
       "social": "sozial",
       "photography": "fotografie",
       "about": "über mich",
-      "say hi": "sag hallo",
 
       /* --- shared: footer / project scaffolding --- */
       "got a wild idea? a stage? a factory? ↓": "eine wilde idee? eine bühne? eine fabrik? ↓",
@@ -805,7 +805,113 @@
       "Using AI tools like Midjourney, the students' thoughts, fears, and priorities were translated into visual scenarios, revealing possible developments in future dietary habits and lifestyles.": "Mit KI-Tools wie Midjourney wurden Gedanken, Ängste und Prioritäten der Schüler:innen in visuelle Szenarien übersetzt — mögliche Entwicklungen künftiger Ess- und Lebensgewohnheiten.",
       "\"Farm to Fork\" Dinner: The process culminated in a self-organized banquet where various stations represented the cultural diversity of the class, merging traditional culinary skills with forward-looking ideas.": "„Farm to Fork“-Dinner: Der Prozess gipfelte in einem selbst organisierten Bankett, bei dem verschiedene Stationen die kulturelle Vielfalt der Klasse repräsentierten — traditionelles Küchenhandwerk trifft zukunftsgerichtete Ideen.",
       "The Act of Preservation.": "Der Akt des Konservierens.",
-      "To \"conserve\" the event, individual thoughts, menu identities, and atmospheric impressions were vacuum-sealed, creating a metaphorical time capsule of the students' creativity and the evening's impact.": "Um den Abend zu „konservieren“, wurden einzelne Gedanken, Menü-Identitäten und atmosphärische Eindrücke vakuumiert — eine metaphorische Zeitkapsel der Kreativität der Schüler:innen und der Wirkung des Abends."
+      "To \"conserve\" the event, individual thoughts, menu identities, and atmospheric impressions were vacuum-sealed, creating a metaphorical time capsule of the students' creativity and the evening's impact.": "Um den Abend zu „konservieren“, wurden einzelne Gedanken, Menü-Identitäten und atmosphärische Eindrücke vakuumiert — eine metaphorische Zeitkapsel der Kreativität der Schüler:innen und der Wirkung des Abends.",
+
+      /* --- Portfolio Redesign (case study) --- */
+      "Role": "Rolle",
+      "UX/UI Designer · Brand Designer · Frontend Designer": "UX/UI-Designer · Brand Designer · Frontend Designer",
+      "Year": "Jahr",
+      "Designing a digital identity that communicates creativity, simplicity and craftsmanship — a portfolio that feels personal and professional at the same time.": "Eine digitale Identität gestalten, die Kreativität, Einfachheit und Handwerk vermittelt — ein Portfolio, das sich gleichzeitig persönlich und professionell anfühlt.",
+      "The context.": "Der Kontext.",
+      "amiel.studio is my personal portfolio website. It presents design work, creative projects and professional experience through a minimal, immersive digital experience — a personal-brand platform and a portfolio in one, for recruiters, potential clients and fellow creatives.": "amiel.studio ist meine persönliche Portfolio-Website. Sie zeigt Designarbeit, kreative Projekte und berufliche Erfahrung in einer minimalen, immersiven digitalen Erfahrung — Personal-Brand-Plattform und Portfolio in einem, für Recruiter:innen, potenzielle Kund:innen und kreative Kolleg:innen.",
+      "The problem.": "Das Problem.",
+      "Classic portfolio sites show projects, but rarely convey personality, design philosophy or process. I wanted a site that feels personal and professional, shows selected work clearly, leaves a memorable first impression, and communicates design thinking beyond pure visuals.": "Klassische Portfolio-Seiten zeigen Projekte, vermitteln aber selten Persönlichkeit, Designphilosophie oder Prozess. Ich wollte eine Seite, die persönlich und professionell wirkt, ausgewählte Arbeiten klar zeigt, einen einprägsamen ersten Eindruck hinterlässt und Design-Thinking über reine Visuals hinaus vermittelt.",
+      "The bet.": "Die Wette.",
+      "Instead of forcing every project into one visual language, the site should be able to speak in two — one emotional, one precise — and let the visitor choose which side to meet me on.": "Statt jedes Projekt in eine visuelle Sprache zu zwängen, sollte die Seite in zweien sprechen können — einer emotionalen, einer präzisen — und die Besucher:innen wählen lassen, auf welcher Seite sie mir begegnen.",
+
+      "Goals, deliverables & timeline": "Ziele, Deliverables & Timeline",
+      "Primary goals.": "Zentrale Ziele.",
+      "Build a strong personal digital identity, show selected projects clearly, improve the storytelling around my design work, and build trust with recruiters and clients.": "Eine starke persönliche digitale Identität aufbauen, ausgewählte Projekte klar zeigen, das Storytelling um meine Designarbeit verbessern und Vertrauen bei Recruiter:innen und Kund:innen aufbauen.",
+      "How it should feel.": "Wie es sich anfühlen soll.",
+      "Visitors should feel curiosity, trust in my skills, and a genuine connection to how I approach design.": "Besucher:innen sollen Neugier spüren, Vertrauen in meine Fähigkeiten und eine echte Verbindung zu meinem Design-Ansatz.",
+      "UX strategy": "UX-Strategie",
+      "Information architecture": "Informationsarchitektur",
+      "Visual design": "Visual Design",
+      "Design system": "Design-System",
+      "Responsive layout": "Responsive Layout",
+      "Interactive prototype": "Interaktiver Prototyp",
+      "Structure": "Struktur",
+      "UX design": "UX-Design",
+      "≈ 2 weeks": "≈ 2 Wochen",
+
+      "Who it is for": "Für wen es ist",
+      "Two audiences visit the same site with different questions — one is hiring, the other wants to collaborate.": "Zwei Zielgruppen besuchen dieselbe Seite mit unterschiedlichen Fragen — die eine stellt ein, die andere will zusammenarbeiten.",
+      "Creative Recruiter": "Creative Recruiter",
+      "28–45, looking for designers with strong visual skills and clear thinking.": "28–45, sucht Designer:innen mit starken visuellen Skills und klarem Denken.",
+      "Needs:": "Braucht:",
+      "grasp skills fast, judge design quality, see professional experience.": "Skills schnell erfassen, Designqualität beurteilen, berufliche Erfahrung sehen.",
+      "Goal:": "Ziel:",
+      "decide whether I fit an open role.": "entscheiden, ob ich zu einer offenen Rolle passe.",
+      "Potential Client": "Potenzielle Kundschaft",
+      "Wants to understand the design process, read the craft and recognise the person behind it.": "Will den Designprozess verstehen, das Handwerk lesen und die Person dahinter erkennen.",
+      "understand my style, assess services, build trust.": "meinen Stil verstehen, Leistungen einschätzen, Vertrauen aufbauen.",
+      "start a collaboration.": "eine Zusammenarbeit starten.",
+
+      "Visual direction": "Visuelle Richtung",
+      "Minimal, editorial, premium, human, creative, modern — grounded in Swiss design principles, editorial layouts, digital galleries and contemporary studios.": "Minimal, editorial, premium, menschlich, kreativ, modern — verankert in Swiss Design Principles, Editorial-Layouts, digitalen Galerien und zeitgenössischen Studios.",
+      "Clarity": "Klarheit",
+      "Content should be immediately understandable.": "Inhalt soll unmittelbar verständlich sein.",
+      "Personality": "Persönlichkeit",
+      "The website should feel unique and human.": "Die Website soll eigenständig und menschlich wirken.",
+      "Simplicity vs. Explicity": "Einfachheit vs. Explizitheit",
+      "Remove unnecessary elements, express through a unique experience.": "Überflüssiges weglassen, über eine einzigartige Erfahrung ausdrücken.",
+      "Craft": "Handwerk",
+      "Every detail contributes to the experience.": "Jedes Detail trägt zur Erfahrung bei.",
+
+      "The core decision": "Die zentrale Entscheidung",
+      "The central UX decision: not one look, but two design directions the visitor can switch between — the same content, two temperaments.": "Die zentrale UX-Entscheidung: nicht ein Look, sondern zwei Designrichtungen, zwischen denen Besucher:innen wechseln können — derselbe Inhalt, zwei Temperamente.",
+      "Main effect": "Hauptwirkung",
+      "Focus": "Fokus",
+      "Fits": "Passt zu",
+      "Strength": "Stärke",
+      "Risk": "Risiko",
+      "emotional, experimental": "emotional, experimentell",
+      "attitude & personality": "Haltung & Persönlichkeit",
+      "social design, art, events": "Social Design, Kunst, Events",
+      "recognisable character": "wiedererkennbarer Charakter",
+      "can overpower the content": "kann den Inhalt überlagern",
+      "precise, professional": "präzise, professionell",
+      "process & quality": "Prozess & Qualität",
+      "product design, engineering, technical projects": "Produktdesign, Engineering, technische Projekte",
+      "clarity and structure": "Verständlichkeit und Struktur",
+      "can feel more distant": "kann distanzierter wirken",
+      "Bold, in detail": "Bold im Detail",
+      "Attitude & energy": "Haltung & Energie",
+      "An expressive, experimental language with a stronger focus on personality and emotion. It makes a strong first impression, lifts unusual projects and supports the narrative layer — a willingness to test the borders between design, art and society.": "Eine ausdrucksstarke, experimentelle Sprache mit stärkerem Fokus auf Persönlichkeit und Emotion. Sie macht einen starken ersten Eindruck, hebt ungewöhnliche Projekte hervor und unterstützt die erzählerische Ebene — die Bereitschaft, die Grenzen zwischen Design, Kunst und Gesellschaft auszutesten.",
+      "The challenge:": "Die Herausforderung:",
+      "a strong visual voice can compete with the projects, and technical detail needs enough room to breathe.": "eine starke visuelle Sprache kann mit den Projekten konkurrieren, und technische Details brauchen genug Raum zum Atmen.",
+      "Clear, in detail": "Clear im Detail",
+      "Process & precision": "Prozess & Präzision",
+      "A reduced, structured language focused on content, process and project quality. It reads as serious and focused, makes navigation easy and lets the design process become visible — a fit for product design, CAD, engineering and development work.": "Eine reduzierte, strukturierte Sprache mit Fokus auf Inhalt, Prozess und Projektqualität. Sie wirkt seriös und fokussiert, macht die Navigation einfach und lässt den Designprozess sichtbar werden — passend für Produktdesign, CAD, Engineering und Entwicklungsarbeit.",
+      "less emotional expression, so the personal signature has to come through the content itself.": "weniger emotionaler Ausdruck, die persönliche Handschrift muss also über die Inhalte selbst kommen.",
+
+      "The landing page branches into Bold and Clear — both lead to the same one-pager, so the structure never forks, only the skin does.": "Die Landingpage verzweigt sich in Bold und Clear — beide führen zum selben One-Pager, die Struktur teilt sich also nie, nur die Hülle.",
+      "Header — Logo · Theme (Clean/Bold) · Language (DE/EN) · Navigator": "Header — Logo · Theme (Clean/Bold) · Sprache (DE/EN) · Navigator",
+      "One-pager": "One-Pager",
+      "Portrait": "Porträt",
+      "Work": "Arbeit",
+      "Experience · Product": "Erfahrung · Produkt",
+      "Social · Photography": "Sozial · Fotografie",
+      "About": "Über mich",
+      "Description · Photo": "Beschreibung · Foto",
+      "Contact · Location": "Kontakt · Standort",
+      "Downloads · Imprint": "Downloads · Impressum",
+
+      "A documented styleguide keeps both directions on the same foundation — one type scale, one colour system, shared tokens.": "Ein dokumentierter Styleguide hält beide Richtungen auf derselben Basis — eine Typo-Skala, ein Farbsystem, geteilte Tokens.",
+      "Typography.": "Typografie.",
+      "A sans-serif display face for headings (H1 68px, H2 42px, H3 26px, logo/sub 16px), Epilogue for body copy across five steps (25/20/16/13/10px), and Droid Sans Mono as an accent for labels and kickers.": "Eine serifenlose Display-Font für Headlines (H1 68px, H2 42px, H3 26px, Logo/Sub 16px), Epilogue für Fließtext in fünf Stufen (25/20/16/13/10px) und Droid Sans Mono als Akzent für Labels und Kicker.",
+      "Colour.": "Farbe.",
+      "Three documented scales — a pink accent (P50–P500, from #fdecf6 to #922964), a warm beige (B50–B500, #fdfdfc to #8f8e89) and a grey scale (G50–G500, #eaeaea to #1a1a1a) — each with checked AA/AAA contrast values.": "Drei dokumentierte Skalen — ein Pink-Akzent (P50–P500, von #fdecf6 bis #922964), ein warmes Beige (B50–B500, #fdfdfc bis #8f8e89) und eine Grau-Skala (G50–G500, #eaeaea bis #1a1a1a) — jeweils mit geprüften AA/AAA-Kontrastwerten.",
+
+      "Review & conclusion": "Review & Fazit",
+      "My portfolio shows my work at the intersection of industrial design, social design, project development and visual communication. The site isn't just a collection of projects — it's a portrait of how I work, where I stand and how I see things across disciplines. Technical projects, social experiments and visual work together paint a many-sided picture of my role as a designer.": "Mein Portfolio zeigt meine Arbeit an der Schnittstelle von Industrial Design, Social Design, Projektentwicklung und visueller Kommunikation. Die Seite ist nicht nur eine Sammlung von Projekten — sie ist ein Bild davon, wie ich arbeite, wofür ich stehe und wie ich die Dinge über Disziplinen hinweg sehe. Technische Projekte, soziale Experimente und visuelle Arbeiten ergeben zusammen ein vielseitiges Bild meiner Rolle als Designer.",
+      "The two directions, Bold and Clear, let me express different facets of my personality and my design. Bold shows my creative attitude and my ability to develop new perspectives; Clear shows my technical competence and my structured approach.": "Die zwei Richtungen Bold und Clear lassen mich unterschiedliche Facetten meiner Persönlichkeit und meines Designs ausdrücken. Bold zeigt meine kreative Haltung und meine Fähigkeit, neue Perspektiven zu entwickeln; Clear zeigt meine technische Kompetenz und meine strukturierte Herangehensweise.",
+      "The takeaway.": "Das Fazit.",
+      "Combining both isn't a compromise — it mirrors how I actually work. Together they make a portfolio that doesn't just present finished results, but keeps the whole design process visible. Pairing emotional storytelling with clear structure is a strength, because it reflects my role as an interdisciplinary designer and project lead.": "Beides zu kombinieren ist kein Kompromiss — es spiegelt, wie ich tatsächlich arbeite. Zusammen ergeben sie ein Portfolio, das nicht nur fertige Ergebnisse zeigt, sondern den ganzen Designprozess sichtbar hält. Emotionales Storytelling mit klarer Struktur zu verbinden ist eine Stärke, weil es meine Rolle als interdisziplinärer Designer und Projektleiter widerspiegelt.",
+
+      /* --- home: portfolio-redesign card --- */
+      "UX · UI · design system": "UX · UI · Design-System",
+      "A UX/UI case study on designing amiel.studio around two switchable design directions — Bold and Clear — that communicate creativity, simplicity and craftsmanship.": "Eine UX/UI-Case-Study über die Gestaltung von amiel.studio rund um zwei umschaltbare Designrichtungen — Bold und Clear — die Kreativität, Einfachheit und Handwerk vermitteln."
     };
 
     var swaps = null;

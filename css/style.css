@@ -2241,3 +2241,165 @@ body { overflow-x: clip; }   /* also set in the base reset — kept explicit her
   .nav-pill { gap: .35rem; }
   .brand { font-size: .74rem; }
 }
+
+/* ============================================================
+   CASE STUDY — scoped .cs-* utilities (portfolio-redesign.html)
+   Tokens only, no hardcoded values, so both themes (bold / clean)
+   resolve automatically. Case studies bring no own stylesheet;
+   this block lives in the one central CSS by design.
+   ============================================================ */
+
+/* meta grid under the hero: role / tools / year */
+.cs-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  margin-top: clamp(1.6rem, 4vw, 2.4rem);
+}
+.cs-meta__k {
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .58;
+  margin-bottom: .4rem;
+}
+.cs-meta__v { font-size: 1.02rem; line-height: 1.5; }
+
+/* mono kicker reused across cs sections */
+.cs-kicker {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: .74rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--pink);
+  margin-bottom: 1rem;
+}
+[data-theme="clean"] .cs-kicker { color: var(--pink-accent); }
+
+/* card grid — personas & design principles */
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1rem, 2.5vw, 1.6rem);
+  margin-top: 1.5rem;
+}
+.cs-card {
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-hi);
+  box-shadow: var(--shadow-rest);
+  padding: clamp(1.2rem, 2.5vw, 1.8rem);
+}
+.cs-card__n {
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  color: var(--pink);
+  margin-bottom: .6rem;
+}
+[data-theme="clean"] .cs-card__n { color: var(--pink-accent); }
+.cs-card h3 { font-family: var(--font-display); font-size: 1.12rem; margin-bottom: .5rem; }
+.cs-card p { font-size: .96rem; line-height: 1.6; }
+.cs-card p + p { margin-top: .6rem; }
+
+/* timeline / process steps */
+.cs-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  align-items: center;
+  margin-top: 1.4rem;
+  font-family: var(--font-mono);
+  font-size: .82rem;
+}
+.cs-flow__step {
+  border: var(--line);
+  border-radius: var(--radius);
+  padding: .5rem .9rem;
+  background: var(--paper-hi);
+}
+.cs-flow__arrow { color: var(--pink); }
+[data-theme="clean"] .cs-flow__arrow { color: var(--pink-accent); }
+
+/* BOLD vs CLEAR comparison */
+.cs-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1rem, 2.5vw, 1.8rem);
+  margin-top: 1.6rem;
+}
+.cs-compare__col {
+  border: var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-rest);
+  background: var(--paper-hi);
+}
+.cs-compare__head {
+  padding: 1rem 1.2rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: .02em;
+  color: var(--white);
+}
+.cs-compare__col--bold .cs-compare__head { background: var(--pink); }
+.cs-compare__col--clear .cs-compare__head { background: var(--navy); }
+.cs-compare__body { padding: 1.1rem 1.2rem; }
+.cs-compare__row { padding: .7rem 0; border-top: var(--line); }
+.cs-compare__row:first-child { border-top: 0; padding-top: 0; }
+.cs-compare__row dt {
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  opacity: .58;
+  margin-bottom: .25rem;
+}
+.cs-compare__row dd { margin: 0; font-size: .96rem; line-height: 1.5; }
+
+/* colour swatches for the styleguide section (documented palette = content) */
+.cs-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  gap: .5rem;
+  margin-top: 1rem;
+}
+.cs-swatch {
+  aspect-ratio: 1 / 1;
+  border: var(--line);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: flex-end;
+  padding: .35rem;
+  font-family: var(--font-mono);
+  font-size: .56rem;
+}
+.cs-swatch--onlight { color: var(--ink); }
+.cs-swatch--ondark { color: var(--white); }
+
+/* type-scale mini spec */
+.cs-type { margin-top: 1rem; }
+.cs-type > * { margin: 0; line-height: 1.12; }
+.cs-type > * + * { margin-top: .6rem; }
+.cs-type__h1 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 4.25rem); font-weight: 700; }
+.cs-type__h2 { font-family: var(--font-display); font-size: clamp(1.6rem, 3.5vw, 2.625rem); font-weight: 700; }
+.cs-type__h3 { font-family: var(--font-display); font-size: 1.625rem; font-weight: 500; }
+.cs-type__body { font-family: var(--font-body); font-size: 1rem; }
+.cs-type__mono { font-family: var(--font-mono); font-size: 1rem; letter-spacing: .04em; }
+
+/* information-architecture sitemap (inline SVG inherits token vars) */
+.cs-sitemap { margin-top: 1.4rem; }
+.cs-sitemap svg { width: 100%; height: auto; display: block; }
+.cs-sitemap .cs-node { fill: var(--paper-hi); stroke: var(--ink); stroke-width: 1.5; }
+.cs-sitemap .cs-node--bold { fill: var(--pink); }
+.cs-sitemap .cs-node--clear { fill: var(--navy); }
+.cs-sitemap .cs-line { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.cs-sitemap .cs-t { fill: var(--ink); font-family: var(--font-mono); }
+.cs-sitemap .cs-t--inv { fill: var(--white); }
+.cs-sitemap .cs-t--sub { fill: var(--ink); opacity: .62; font-family: var(--font-mono); }
+
+@media (max-width: 720px) {
+  .cs-compare { grid-template-columns: 1fr; }
+}
