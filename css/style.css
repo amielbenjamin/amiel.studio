@@ -907,7 +907,12 @@ body.menu-open { overflow: hidden; }
 .photo-carousel__track img {
   height: min(52vh, 440px);
   width: auto;
-  max-width: none;
+  /* most photos are narrower than this and render at their natural width;
+     only the rare very-wide scan/screenshot hits the cap and gets cropped
+     via object-fit instead of blowing up the row to several times the
+     width of its neighbours */
+  max-width: min(85vw, 620px);
+  object-fit: cover;
 }
 
 /* photography: unframed prints — the image speaks for itself */
