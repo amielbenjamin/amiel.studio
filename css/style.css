@@ -2403,3 +2403,846 @@ body { overflow-x: clip; }   /* also set in the base reset — kept explicit her
 @media (max-width: 720px) {
   .cs-compare { grid-template-columns: 1fr; }
 }
+
+
+/* ============================================================
+   theme-bold * CASE STUDIES -- "Kinetic Poster" (Bold 2.0)
+   ------------------------------------------------------------
+   Scope: [data-theme="bold"][data-page="case"].
+   Nothing in this block can reach
+     - theme-clean      (different data-theme),
+     - home.html        (carries no data-page),
+     - index.html       (the split landing loads no stylesheet at all).
+   The poster language: full-bleed colour blocks instead of paper
+   cards, typography as the layout, hard cuts instead of tilts.
+   Everything below is static styling -- the motion in main.js only
+   adds the .is-* classes, so the page reads correctly without JS.
+   ============================================================ */
+
+/* ---------- new components (class-only, appear on case pages) ---------- */
+/* neutral base so theme-clean renders them sanely too */
+.proj-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1.6rem;
+  margin-bottom: 1.4rem;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--pink-deep);
+}
+.proj-idx {
+  font-family: var(--font-mono);
+  font-size: .74rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 1.2rem;
+}
+.proj-idx i { font-style: normal; color: var(--pink-deep); margin-right: .8em; }
+/* both are poster furniture — theme-clean case studies stay exactly as
+   they were before Bold 2.0 */
+[data-theme="clean"] .proj-meta,
+[data-theme="clean"] .proj-idx { display: none; }
+
+/* ---------- tokens ----------
+   [data-poster] is on both poster pages (case studies AND home.html);
+   [data-page="case"] / [data-page="home"] carry the layout differences.
+   Everything shared lives on [data-poster] so it is written once. */
+[data-theme="bold"][data-poster] {
+  /* two new signal tones; the die-cut palette stays available underneath */
+  --pink-hot: hsl(331, 100%, 56%);
+  --acid: hsl(72, 100%, 62%);
+
+  /* the poster runs colder and flatter than the die-cut paper look */
+  --ink: hsl(0, 0%, 4%);
+  --paper: hsl(45, 20%, 93%);
+  --paper-hi: hsl(45, 24%, 96%);
+
+  --statusbar: 38px;
+}
+
+[data-theme="bold"][data-poster] body { background: var(--paper); }
+/* the paper grain belongs to the die-cut look, not to the poster */
+[data-theme="bold"][data-poster] body::after { display: none; }
+/* the status bar is built by JS -- only then does the body make room */
+[data-theme="bold"][data-poster] body.has-statusbar { padding-bottom: var(--statusbar); }
+
+[data-theme="bold"][data-page="case"] .proj-idx i { color: var(--pink-hot); }
+[data-theme="bold"][data-page="case"] .proj-meta { color: var(--pink-hot); }
+
+/* ---------- header: the pill turns into a hard black bar ----------
+   Deliberately NOT transparent-over-hero: the .is-tucked class that
+   would drive that is set in the motion block, which never runs under
+   prefers-reduced-motion -- a transparent bar would then stay invisible
+   over the light sections. An opaque bar is correct in every state. */
+[data-theme="bold"][data-poster] .nav-pill {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  border-radius: 4px;
+  box-shadow: none;
+}
+[data-theme="bold"][data-poster] .site-header.is-tucked .nav-pill { box-shadow: none; }
+[data-theme="bold"][data-poster] .brand .spark { color: var(--pink-hot); }
+[data-theme="bold"][data-poster] .nav-links a:hover { background: var(--pink-hot); color: var(--white); }
+[data-theme="bold"][data-poster] .nav-links a.is-active { background: var(--paper); color: var(--ink); }
+[data-theme="bold"][data-poster] .lang-toggle,
+[data-theme="bold"][data-poster] .theme-toggle {
+  background: transparent;
+  color: var(--paper);
+  border-color: currentColor;
+  border-radius: 3px;
+  box-shadow: none;
+}
+[data-theme="bold"][data-poster] .lang-toggle:hover,
+[data-theme="bold"][data-poster] .theme-toggle:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--pink-hot);
+  border-color: var(--pink-hot);
+  color: var(--white);
+}
+[data-theme="bold"][data-poster] .lang-toggle:active,
+[data-theme="bold"][data-poster] .theme-toggle:active { transform: none; box-shadow: none; }
+
+/* ---------- hero: one black poster field ---------- */
+[data-theme="bold"][data-page="case"] .proj-hero {
+  background: var(--ink);
+  color: var(--paper);
+  min-height: 92svh;
+  display: flex;
+  flex-direction: column;
+  /* the title block sits on the floor of the black field, poster-style */
+  justify-content: flex-end;
+  gap: clamp(1.8rem, 5vw, 3.5rem);
+  padding: 8.5rem 0 2.6rem;
+  overflow: clip;
+}
+/* the poster ignores the container -- every hero row runs to the gutter */
+[data-theme="bold"][data-page="case"] .proj-hero > .wrap {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: var(--gutter);
+}
+
+[data-theme="bold"][data-page="case"] .proj-hero .crumb {
+  background: transparent;
+  border: 1.5px solid currentColor;
+  border-radius: 0;
+  color: var(--pink-hot);
+  box-shadow: none;
+  margin-bottom: 1.1rem;
+}
+[data-theme="bold"][data-page="case"] .proj-hero .crumb:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--pink-hot);
+  color: var(--ink);
+}
+
+[data-theme="bold"][data-page="case"] .proj-hero h1 {
+  color: var(--paper);
+  text-shadow: none;
+  max-width: none;
+  font-size: clamp(2.6rem, 14vw, 12rem);
+  letter-spacing: -.055em;
+  line-height: .86;
+  /* pull the headline out to the true screen edges (no 100vw -- the
+     parent already spans the full width minus the gutter) */
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+}
+/* only once JS has built the marquee may the headline stop wrapping */
+[data-theme="bold"][data-page="case"] .proj-hero h1.is-marquee {
+  padding-inline: 0;
+  overflow: clip;
+  user-select: none;
+}
+[data-theme="bold"][data-page="case"] .proj-hero h1 .mq__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+[data-theme="bold"][data-page="case"] .proj-hero h1 .mq__item {
+  flex: none;
+  padding-right: .14em;
+  white-space: nowrap;
+}
+/* every second copy is an outline -- the headline reads as a printed loop */
+[data-theme="bold"][data-page="case"] .proj-hero h1 .mq__item:nth-child(even) {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--pink-hot);
+}
+
+[data-theme="bold"][data-page="case"] .proj-hero .work-row__tags {
+  margin-top: 0;
+  gap: .35rem;
+}
+[data-theme="bold"][data-page="case"] .proj-hero .chip {
+  background: transparent;
+  color: var(--paper);
+  border: 1.5px solid hsla(0, 0%, 100%, .35);
+}
+[data-theme="bold"][data-page="case"] .proj-hero .chip:first-child {
+  background: var(--pink-hot);
+  border-color: var(--pink-hot);
+  color: var(--white);
+  font-weight: 700;
+}
+
+/* ---------- brief: the statement block ---------- */
+[data-theme="bold"][data-page="case"] .proj-lead {
+  background: var(--paper);
+  padding-block: clamp(3.5rem, 9vw, 7rem);
+}
+[data-theme="bold"][data-page="case"] .proj-lead > .wrap {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: var(--gutter);
+}
+
+[data-theme="bold"][data-page="case"] .proj-lead .lead {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4.4vw, 3.4rem);
+  letter-spacing: -.035em;
+  line-height: 1.08;
+  max-width: 24ch;
+  padding-bottom: 0;
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+[data-theme="bold"][data-page="case"] .proj-lead .lead::before { content: none; }
+/* The statement builds line by line as you scroll: a hard edge travels
+   down the text and switches it from dimmed to solid. Done with a
+   background-clip gradient driven by --sweep instead of wrapping every
+   word in a span -- the language toggle swaps whole text nodes, and
+   splitting the paragraph would detach the node it holds and leave the
+   statement stuck in one language. Without JS --sweep never moves off
+   100%, so the text is simply solid. */
+/* guarded: without background-clip:text the transparent fill would make
+   the whole statement invisible instead of merely un-animated */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  [data-theme="bold"][data-page="case"] .proj-lead .lead.is-swept {
+    background-image: linear-gradient(
+      180deg,
+      currentColor 0%,
+      currentColor var(--sweep, 100%),
+      hsla(0, 0%, 4%, .17) var(--sweep, 100%)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* the lead image loses the white mat and the tilt and runs edge to edge */
+[data-theme="bold"][data-page="case"] .proj-lead__flow > .print,
+[data-theme="bold"][data-page="case"] .proj-lead__collage {
+  float: none;
+  width: 100%;
+  margin: clamp(2.2rem, 6vw, 4rem) 0;
+}
+[data-theme="bold"][data-page="case"] .proj-lead .print {
+  position: relative;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+  margin-inline: calc(var(--gutter) * -1);
+  overflow: clip;
+}
+[data-theme="bold"][data-page="case"] .proj-lead__collage { margin-inline: 0; }
+[data-theme="bold"][data-page="case"] .proj-lead__collage .print { margin-inline: 0; }
+[data-theme="bold"][data-page="case"] .proj-lead .print img {
+  border-radius: 0;
+  width: 100%;
+  /* colour is earned: greyscale until you point at it. Cut-out PNGs and
+     photographs behave the same way, so no tint rectangle is needed. */
+  filter: grayscale(1) contrast(1.08);
+  transition: filter .5s cubic-bezier(.2, .7, .2, 1);
+}
+[data-theme="bold"][data-page="case"] .proj-lead .print:hover img { filter: none; }
+@media (hover: none) {
+  [data-theme="bold"][data-page="case"] .proj-lead .print img { filter: none; }
+}
+
+/* ---------- notes: two columns, headings as markers ---------- */
+[data-theme="bold"][data-page="case"] .proj-copy {
+  columns: 2;
+  column-gap: clamp(1.8rem, 4vw, 3.2rem);
+  font-size: 1rem;
+  line-height: 1.62;
+  margin-top: clamp(2rem, 5vw, 3rem);
+}
+[data-theme="bold"][data-page="case"] .proj-copy > * + * { margin-top: 0; }
+[data-theme="bold"][data-page="case"] .proj-copy p {
+  break-inside: avoid;
+  margin-bottom: 1.5rem;
+}
+[data-theme="bold"][data-page="case"] .proj-copy strong {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1rem;
+  letter-spacing: -.01em;
+  margin-bottom: .45rem;
+}
+[data-theme="bold"][data-page="case"] .proj-copy strong::before {
+  content: "";
+  display: inline-block;
+  width: .58em;
+  height: .58em;
+  background: var(--pink-hot);
+  margin-right: .5em;
+}
+[data-theme="bold"][data-page="case"] .proj-copy h3 { color: var(--pink-hot); }
+
+/* ---------- documentation: the gallery is a black room ---------- */
+[data-theme="bold"][data-page="case"] .proj-gallery {
+  background: var(--ink);
+  color: var(--paper);
+  padding-block: clamp(3.5rem, 9vw, 7rem);
+  overflow: clip;
+}
+[data-theme="bold"][data-page="case"] .proj-gallery > .wrap {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: var(--gutter);
+}
+[data-theme="bold"][data-page="case"] .proj-gallery .photo-carousel {
+  margin-top: 0;
+  padding-inline: 0;
+}
+[data-theme="bold"][data-page="case"] .photo-carousel__track {
+  align-items: flex-start;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  padding: 2.8rem var(--gutter) 1rem;
+  counter-reset: fig;
+}
+[data-theme="bold"][data-page="case"] .photo-carousel__track .print {
+  position: relative;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+[data-theme="bold"][data-page="case"] .photo-carousel__track .print::before {
+  counter-increment: fig;
+  content: counter(fig, decimal-leading-zero);
+  position: absolute;
+  top: -1.8rem;
+  left: 0;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  letter-spacing: .14em;
+  color: var(--pink-hot);
+}
+/* every other frame steps down -- the row reads as a printed strip */
+[data-theme="bold"][data-page="case"] .photo-carousel__track .print:nth-child(odd) {
+  margin-top: clamp(1.5rem, 5vw, 4rem);
+}
+[data-theme="bold"][data-page="case"] .photo-carousel__track .print img {
+  border-radius: 0;
+  height: min(58vh, 560px);
+}
+[data-theme="bold"][data-page="case"] .photo-carousel__track .print:hover {
+  transform: none;
+  box-shadow: none;
+}
+/* while the gallery is pinned the page scroll drives it -- the buttons
+   would fight the transform, so they step aside */
+[data-theme="bold"][data-page="case"] .photo-carousel.is-pinned .photo-carousel__track {
+  overflow: hidden;
+  scroll-snap-type: none;
+}
+[data-theme="bold"][data-page="case"] .photo-carousel.is-pinned .photo-carousel__nav { display: none; }
+[data-theme="bold"][data-page="case"] .proj-gallery .carousel-btn {
+  background: transparent;
+  color: var(--paper);
+  border-color: var(--paper);
+  border-radius: 3px;
+  box-shadow: none;
+}
+[data-theme="bold"][data-page="case"] .proj-gallery .carousel-btn:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--pink-hot);
+  border-color: var(--pink-hot);
+  color: var(--white);
+}
+
+/* seamless tile wall (random 3D) -- flatter and tighter on black */
+[data-theme="bold"][data-page="case"] .proj-masonry { column-gap: 4px; }
+[data-theme="bold"][data-page="case"] .proj-masonry figure { margin-bottom: 4px; }
+
+/* ---------- partners: one acid strip across the black room ---------- */
+[data-theme="bold"][data-page="case"] .proj-partners {
+  width: 100%;
+  max-width: none;
+  margin: clamp(3rem, 7vw, 5rem) 0 0;
+  padding: clamp(1.4rem, 3.5vw, 2.2rem) var(--gutter);
+  background: var(--acid);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem 2.5rem;
+}
+[data-theme="bold"][data-page="case"] .proj-partners__title {
+  color: var(--ink);
+  margin: 0;
+  text-align: left;
+}
+[data-theme="bold"][data-page="case"] .proj-partners__logos { gap: 1.8rem; }
+[data-theme="bold"][data-page="case"] .proj-partners .logo-chip {
+  width: auto;
+  height: 42px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-theme="bold"][data-page="case"] .proj-partners .logo-chip:hover { transform: none; }
+[data-theme="bold"][data-page="case"] .proj-partners .logo-chip img {
+  width: auto;
+  height: 100%;
+  filter: grayscale(1) contrast(1.4);
+}
+
+/* ---------- next: the loudest block on the page ---------- */
+[data-theme="bold"][data-page="case"] .proj-next {
+  background: var(--pink-hot);
+  color: var(--ink);
+  padding-block: clamp(4rem, 11vw, 9rem);
+}
+[data-theme="bold"][data-page="case"] .proj-next .eyebrow { color: var(--ink); opacity: .68; }
+[data-theme="bold"][data-page="case"] .proj-next a.next-link {
+  display: inline-block;
+  color: var(--ink);
+  font-size: clamp(2rem, 9vw, 7rem);
+  letter-spacing: -.05em;
+  transition: transform .35s var(--ease-spring), color .2s ease;
+}
+[data-theme="bold"][data-page="case"] .proj-next a.next-link:hover {
+  color: var(--white);
+  letter-spacing: -.05em;
+  transform: translateY(-6px) rotate(-1.2deg);
+}
+
+/* ---------- sign-off ---------- */
+[data-theme="bold"][data-page="case"] .site-footer { background: var(--ink); }
+
+/* ---------- status bar (built by JS, decoration only) ---------- */
+.poster-statusbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 110;
+  height: var(--statusbar, 38px);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-inline: var(--gutter);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.poster-statusbar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--pink-hot);
+}
+.poster-statusbar > span { position: relative; z-index: 1; }
+.poster-statusbar__mid { flex: 1; text-align: center; opacity: .6; }
+@media (max-width: 640px) { .poster-statusbar__mid { display: none; } }
+
+/* ---------- cursor disc (built by JS, fine pointers only) ---------- */
+.poster-dot {
+  position: fixed;
+  top: 0; left: 0;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--pink-hot);
+  /* above the lightbox (300) and the cube overlay (350): the page hides
+     the real cursor, so the disc must never end up behind an overlay */
+  z-index: 400;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+}
+.poster-dot span {
+  font-family: var(--font-mono);
+  font-size: .55rem;
+  letter-spacing: .1em;
+  color: #000;
+  opacity: 0;
+  white-space: nowrap;
+}
+/* the die-cut cursor and the disc would be two pointers at once --
+   the disc only takes over once JS has actually drawn it */
+html.poster-cursor,
+html.poster-cursor a,
+html.poster-cursor button,
+html.poster-cursor [role="button"],
+html.poster-cursor summary,
+html.poster-cursor label { cursor: none; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  [data-theme="bold"][data-page="case"] .proj-hero { min-height: 0; padding-top: 7rem; }
+}
+@media (max-width: 720px) {
+  [data-theme="bold"][data-page="case"] .proj-copy { columns: 1; }
+  [data-theme="bold"][data-page="case"] .proj-partners { justify-content: flex-start; }
+}
+
+/* ============================================================
+   theme-bold * HOME (one-pager) -- "Kinetic Poster" (Bold 2.0)
+   ------------------------------------------------------------
+   Scope: [data-theme="bold"][data-page="home"]. Same language as the
+   case studies -- full-bleed colour blocks, typography as the layout,
+   hard cuts instead of tilt, tape and die-cut outlines.
+   Block rhythm: ink / paper / ink / paper / ink / ink / paper / acid /
+   ink, with the hashtag tickers running through it as pink bands.
+   The arcade GIF and the hashtag tickers stay untouched in substance:
+   #PRODUCTDESIGNER and #PROBLEMSOLVER keep carrying the page.
+   ============================================================ */
+
+/* ---------- cross-cutting: paper cards become flat plates ---------- */
+[data-theme="bold"][data-page="home"] .card {
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-theme="bold"][data-page="home"] .chip { border-radius: 0; }
+[data-theme="bold"][data-page="home"] .sticker { filter: none; }
+[data-theme="bold"][data-page="home"] .tape { display: none; }
+/* the marker swash becomes a straight rule under the word */
+[data-theme="bold"][data-page="home"] .hl {
+  background: linear-gradient(var(--pink-hot), var(--pink-hot)) no-repeat 0 100% / 100% 3px;
+  padding-inline: 0;
+}
+
+/* ---------- buttons: outline on ink, no offset shadow ---------- */
+[data-theme="bold"][data-page="home"] .btn {
+  background: transparent;
+  color: var(--paper);
+  border-color: currentColor;
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-theme="bold"][data-page="home"] .btn:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--paper);
+  color: var(--ink);
+}
+[data-theme="bold"][data-page="home"] .btn:active { transform: none; box-shadow: none; }
+[data-theme="bold"][data-page="home"] .btn--pink {
+  background: var(--pink-hot);
+  border-color: var(--pink-hot);
+  color: var(--white);
+}
+[data-theme="bold"][data-page="home"] .btn--pink:hover {
+  background: var(--white);
+  border-color: var(--white);
+  color: var(--ink);
+}
+
+/* ---------- tickers: the kinetic spine of the page ----------
+   Every ribbon becomes the same pink band -- flat, unrotated, repeated.
+   This is where the required hashtags live, so nothing is removed here,
+   only straightened. */
+[data-theme="bold"][data-page="home"] .ticker,
+[data-theme="bold"][data-page="home"] .ticker--navy,
+[data-theme="bold"][data-page="home"] .ticker--pink {
+  transform: none;
+  border: 0;
+  background: var(--pink-hot);
+  color: var(--white);
+}
+[data-theme="bold"][data-page="home"] .ticker__inner span { letter-spacing: .06em; }
+[data-theme="bold"][data-page="home"] .ticker__inner span::after {
+  content: "/";
+  color: var(--white);
+  opacity: .5;
+  margin-left: 2.2rem;
+}
+
+/* ---------- section heads ---------- */
+[data-theme="bold"][data-page="home"] .sec-head { align-items: flex-end; }
+[data-theme="bold"][data-page="home"] .sec-title {
+  font-size: clamp(2.6rem, 9vw, 7rem);
+  letter-spacing: -.05em;
+  text-shadow: none;
+}
+[data-theme="bold"][data-page="home"] .sec-index {
+  transform: none;
+  border-radius: 0;
+  background: transparent;
+  border: 1.5px solid currentColor;
+  color: inherit;
+}
+
+/* ---------- 01 hero: the black poster field ---------- */
+[data-theme="bold"][data-page="home"] .hero {
+  background: var(--ink);
+  color: var(--paper);
+  min-height: 92svh;
+  padding-top: 8.5rem;
+}
+[data-theme="bold"][data-page="home"] .hero__eyebrow {
+  background: transparent;
+  color: var(--pink-hot);
+  border-color: currentColor;
+}
+[data-theme="bold"][data-page="home"] .hero__title {
+  font-size: clamp(3rem, 11vw, 9rem);
+  letter-spacing: -.05em;
+  line-height: .84;
+}
+/* the surname is printed as an outline -- two weights of the same word */
+[data-theme="bold"][data-page="home"] .hero__title .row--accent {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--pink-hot);
+}
+[data-theme="bold"][data-page="home"] .hero__sub { color: var(--paper); }
+/* the arcade GIF is dropped on the poster hero -- the ticker band is now
+   the loud, moving carrier of #PRODUCTDESIGNER / #PROBLEMSOLVER, and the
+   quiet keyword line below (normally clean-only) stands in as a second,
+   static carrier so neither hashtag loses a home on this page. */
+[data-theme="bold"][data-page="home"] .hero__arcade { display: none; }
+[data-theme="bold"][data-page="home"] .hero__keywords {
+  display: block;
+  margin-top: 1.6rem;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  letter-spacing: .1em;
+  color: var(--pink-hot);
+}
+[data-theme="bold"][data-page="home"] .hero__keywords b { color: var(--paper); opacity: .4; }
+/* without the arcade panel above it the portrait owns the whole stack */
+[data-theme="bold"][data-page="home"] .hero__stack { max-height: 74vh; }
+[data-theme="bold"][data-page="home"] .hero__portrait {
+  position: static;
+  width: 100%;
+  transform: none;
+}
+[data-theme="bold"][data-page="home"] .hero__stack:hover .hero__portrait { transform: none; }
+[data-theme="bold"][data-page="home"] .hero__portrait,
+[data-theme="bold"][data-page="home"] .about__portrait {
+  filter: grayscale(1) contrast(1.06);
+}
+[data-theme="bold"][data-page="home"] .hero__badge {
+  background: var(--pink-hot);
+  color: var(--white);
+  border: 0;
+  border-radius: 0;
+  transform: none;
+  box-shadow: none;
+}
+[data-theme="bold"][data-page="home"] .hero__badge--b { bottom: 6%; left: -2%; }
+
+/* ---------- 02 intro: statement + three flat plates ---------- */
+[data-theme="bold"][data-page="home"] .intro { background: var(--paper); }
+[data-theme="bold"][data-page="home"] .intro__statement {
+  font-weight: 700;
+  letter-spacing: -.03em;
+  max-width: 24ch;
+}
+[data-theme="bold"][data-page="home"] .service {
+  transform: none;
+  background: var(--paper-hi);
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-theme="bold"][data-page="home"] .service:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--ink);
+  color: var(--paper);
+}
+[data-theme="bold"][data-page="home"] .service__glyph { color: var(--pink-hot); }
+[data-theme="bold"][data-page="home"] .service:hover .service__glyph { color: var(--pink-hot); }
+
+/* ---------- 03 experience: black room ---------- */
+[data-theme="bold"][data-page="home"] .work { background: var(--ink); color: var(--paper); }
+[data-theme="bold"][data-page="home"] .work .sec-title { color: var(--paper); text-shadow: none; }
+[data-theme="bold"][data-page="home"] .work .sec-note { color: var(--paper); opacity: .72; }
+[data-theme="bold"][data-page="home"] .work-row__num { color: var(--pink-hot); }
+/* h3/p on .work-row are hardcoded to --navy for the die-cut paper hero --
+   unreadable once the block itself turns to ink. Poster hero reads paper. */
+[data-theme="bold"][data-page="home"] .work-row__body h3,
+[data-theme="bold"][data-page="home"] .work-row__body p { color: var(--paper); }
+[data-theme="bold"][data-page="home"] .work-row__tags .chip {
+  background: transparent;
+  border-color: hsla(0, 0%, 100%, .35);
+  color: var(--paper);
+}
+
+/* ---------- 04 product: flat grid, no stagger ---------- */
+[data-theme="bold"][data-page="home"] .product { background: var(--paper); }
+[data-theme="bold"][data-page="home"] .product .sec-title { text-shadow: none; }
+[data-theme="bold"][data-page="home"] .product-card {
+  background: var(--paper-hi);
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  box-shadow: none;
+  margin-top: 0;
+}
+[data-theme="bold"][data-page="home"] .product-card:hover { transform: none; box-shadow: none; }
+[data-theme="bold"][data-page="home"] .product-card:hover .product-card__body {
+  background: var(--pink-hot);
+  color: var(--white);
+}
+[data-theme="bold"][data-page="home"] .product-card__tag { color: var(--pink-hot); }
+
+/* ---------- 05 social: black room, no tape, no tilt ---------- */
+[data-theme="bold"][data-page="home"] .social { background: var(--ink); color: var(--paper); }
+[data-theme="bold"][data-page="home"] .social .sec-title { color: var(--paper); text-shadow: none; }
+[data-theme="bold"][data-page="home"] .social .sec-note { color: var(--paper); opacity: .72; }
+[data-theme="bold"][data-page="home"] .collage-card { transform: none; }
+[data-theme="bold"][data-page="home"] .collage-card .card {
+  background: var(--ink);
+  color: var(--paper);
+  border: 1.5px solid var(--paper);
+}
+[data-theme="bold"][data-page="home"] .work .chip,
+[data-theme="bold"][data-page="home"] .social .chip {
+  background: transparent;
+  color: var(--paper);
+  border-color: hsla(0, 0%, 100%, .35);
+}
+
+/* ---------- images earn their colour ---------- */
+[data-theme="bold"][data-page="home"] .work-row__media img,
+[data-theme="bold"][data-page="home"] .product-card__media img,
+[data-theme="bold"][data-page="home"] .collage-card__media img {
+  filter: grayscale(1) contrast(1.08);
+  transition: filter .5s cubic-bezier(.2, .7, .2, 1);
+}
+[data-theme="bold"][data-page="home"] .work-row__media:hover img,
+[data-theme="bold"][data-page="home"] .product-card:hover .product-card__media img,
+[data-theme="bold"][data-page="home"] .collage-card:hover .collage-card__media img { filter: none; }
+@media (hover: none) {
+  [data-theme="bold"][data-page="home"] .work-row__media img,
+  [data-theme="bold"][data-page="home"] .product-card__media img,
+  [data-theme="bold"][data-page="home"] .collage-card__media img,
+  [data-theme="bold"][data-page="home"] .hero__portrait,
+  [data-theme="bold"][data-page="home"] .about__portrait { filter: none; }
+}
+
+/* prints lose the white mat everywhere on the one-pager */
+[data-theme="bold"][data-page="home"] .work-row .print,
+[data-theme="bold"][data-page="home"] .collage-card .print {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+/* ---------- 06 photography: numbered strip on black ---------- */
+[data-theme="bold"][data-page="home"] .photography { background: var(--ink); }
+[data-theme="bold"][data-page="home"] .photography .sec-title { color: var(--pink-hot); text-shadow: none; }
+[data-theme="bold"][data-page="home"] .photography .sec-note { color: var(--paper); opacity: .7; }
+[data-theme="bold"][data-page="home"] .photography .photo-carousel__track {
+  align-items: flex-start;
+  padding-top: 2.8rem;
+  counter-reset: fig;
+}
+[data-theme="bold"][data-page="home"] .photography .photo-carousel__track .print {
+  position: relative;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+[data-theme="bold"][data-page="home"] .photography .photo-carousel__track .print img { border-radius: 0; }
+[data-theme="bold"][data-page="home"] .photography .photo-carousel__track .print::before {
+  counter-increment: fig;
+  content: counter(fig, decimal-leading-zero);
+  position: absolute;
+  top: -1.8rem;
+  left: 0;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  letter-spacing: .14em;
+  color: var(--pink-hot);
+}
+[data-theme="bold"][data-page="home"] .photography .photo-carousel__track .print:nth-child(odd) {
+  margin-top: clamp(1.5rem, 5vw, 4rem);
+}
+[data-theme="bold"][data-page="home"] .photography .photo-carousel__track .print:hover {
+  transform: none;
+  box-shadow: none;
+}
+[data-theme="bold"][data-page="home"] .photography .carousel-btn {
+  background: transparent;
+  color: var(--paper);
+  border-color: var(--paper);
+  border-radius: 3px;
+  box-shadow: none;
+}
+[data-theme="bold"][data-page="home"] .photography .carousel-btn:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--pink-hot);
+  border-color: var(--pink-hot);
+  color: var(--white);
+}
+
+/* ---------- 07 about: the CV as a flat document ---------- */
+[data-theme="bold"][data-page="home"] .about { background: var(--paper); }
+[data-theme="bold"][data-page="home"] .about .sec-title { text-shadow: none; }
+[data-theme="bold"][data-page="home"] .about__portrait { transform: none; }
+[data-theme="bold"][data-page="home"] .cv-doc {
+  transform: none;
+  border-radius: 0;
+  box-shadow: none;
+  border: 1.5px solid var(--ink);
+  background: var(--paper-hi);
+}
+[data-theme="bold"][data-page="home"] .cv-doc__label { color: var(--pink-hot); }
+[data-theme="bold"][data-page="home"] .skills .chip { background: transparent; }
+
+/* ---------- 08 collaborations: the acid strip ---------- */
+[data-theme="bold"][data-page="home"] .collabs { background: var(--acid); }
+[data-theme="bold"][data-page="home"] .collabs__head h2 { color: var(--ink); letter-spacing: -.03em; }
+[data-theme="bold"][data-page="home"] .logo-chip {
+  width: auto;
+  height: 52px;
+  padding: 0 1.4rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-theme="bold"][data-page="home"] .logo-chip:hover { transform: none; }
+[data-theme="bold"][data-page="home"] .logo-chip img {
+  width: auto;
+  height: 100%;
+  filter: grayscale(1) contrast(1.4);
+}
+
+/* ---------- 09 sign-off ---------- */
+[data-theme="bold"][data-page="home"] .site-footer { background: var(--ink); }
+[data-theme="bold"][data-page="home"] .site-footer .eyebrow,
+[data-theme="bold"][data-page="home"] .footer__col h4 { color: var(--pink-hot); }
+[data-theme="bold"][data-page="home"] .footer__mail:hover { color: var(--pink-hot); transform: none; }
+[data-theme="bold"][data-page="home"] .footer__mail .u {
+  background-image: linear-gradient(var(--pink-hot), var(--pink-hot));
+}
