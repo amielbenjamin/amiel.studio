@@ -559,10 +559,6 @@
       "Interdisciplinary designer & project lead — between the workshop, the museum and the football pitch.": "Interdisziplinärer Designer & Projektleiter — zwischen Werkstatt, Museum und Fußballplatz.",
       "next project ↓": "nächstes projekt ↓",
       "in cooperation with": "in kooperation mit",
-      /* case-study section indices (Bold 2.0 poster layout) */
-      "the brief": "der auftrag",
-      "what I did": "was ich gemacht habe",
-      "documentation": "dokumentation",
       "← back to product": "← zurück zu produkt",
       "← back to experience": "← zurück zu erfahrung",
       "← back to social": "← zurück zu sozial",
@@ -1013,23 +1009,11 @@
      bold = tactile sticker slaps, clean = calm editorial fades */
   var themeClean = document.documentElement.getAttribute("data-theme") === "clean";
 
-  /* bold poster pages speak a third motion language: "Kinetic Poster"
-     (Bold 2.0). Same data-reveal hooks, but hard and straight instead of
-     springy — a poster does not wobble. Gated on the data-poster
-     attribute, which sits on the case studies and on home.html; clean
-     and the split landing never carry it. */
-  var posterPage = !themeClean && document.documentElement.hasAttribute("data-poster");
-
   /* ---------- helpers ---------- */
   function stickerIn(targets, vars) {
-    var base;
-    if (themeClean) {
-      base = { opacity: 1, y: 0, duration: 0.55, ease: "power2.out", clearProps: "transform", overwrite: "auto" };
-    } else if (posterPage) {
-      base = { opacity: 1, y: 0, duration: 0.75, ease: "expo.out", clearProps: "transform", overwrite: "auto" };
-    } else {
-      base = { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.7, ease: "back.out(1.5)", clearProps: "transform", overwrite: "auto" };
-    }
+    var base = themeClean
+      ? { opacity: 1, y: 0, duration: 0.55, ease: "power2.out", clearProps: "transform", overwrite: "auto" }
+      : { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.7, ease: "back.out(1.5)", clearProps: "transform", overwrite: "auto" };
     return gsap.to(targets, Object.assign(base, vars || {}));
   }
 
@@ -1038,9 +1022,7 @@
   gsap.utils.toArray("[data-reveal]").forEach(function (el, i) {
     gsap.set(el, themeClean
       ? { opacity: 0, y: 24 }
-      : posterPage
-        ? { opacity: 0, y: 40 }
-        : { opacity: 0, y: 34, scale: 0.97, rotation: (i % 2 ? 1 : -1) * 1.6 });
+      : { opacity: 0, y: 34, scale: 0.97, rotation: (i % 2 ? 1 : -1) * 1.6 });
   });
 
   /* ---------- hero load sequence ---------- */
@@ -1109,9 +1091,8 @@
       );
     });
 
-    /* ---------- section titles get a tiny scrub tilt for life ----------
-       Skipped on poster pages: a poster headline sits perfectly still. */
-    gsap.utils.toArray(posterPage ? [] : ".sec-title").forEach(function (title) {
+    /* ---------- section titles get a tiny scrub tilt for life ---------- */
+    gsap.utils.toArray(".sec-title").forEach(function (title) {
       gsap.fromTo(title,
         { xPercent: -1.5 },
         {
@@ -1126,213 +1107,6 @@
         }
       );
     });
-  }
-
-  /* ---------- bold case studies · "Kinetic Poster" (Bold 2.0) ----------
-     Pure enhancement. Everything below already reads correctly from the
-     HTML alone; this block only adds movement plus two pieces of chrome
-     (status bar, cursor disc). It never runs under prefers-reduced-motion,
-     ?noanim or without GSAP — the early return above covers that. */
-  if (posterPage) {
-    var posterFine = window.matchMedia("(pointer: fine)").matches;
-    /* The headline marquee, the statement sweep, the lead-image cut and
-       the pinned strip are case-study furniture. On home.html these
-       queries come back empty and each block skips itself; the shared
-       chrome (status bar, cursor disc) runs on both. */
-    var posterTitleEl = document.querySelector(".proj-hero h1");
-    var posterTitle = posterTitleEl ? posterTitleEl.textContent.trim() : "";
-    var posterBrand = document.querySelector(".brand");
-    var posterLabel = posterTitle || (posterBrand ? posterBrand.textContent.trim() : "");
-
-    /* --- the headline turns into a marquee that reacts to scroll ---
-       The original text node is MOVED into the first copy, never
-       recreated: the language toggle keeps a reference to that exact
-       node, and a MutationObserver mirrors it onto the clones. Rebuilding
-       the headline from a string would detach that node and leave the
-       title stuck in one language. */
-    if (posterTitleEl && posterTitle) {
-      (function () {
-        var track = document.createElement("span");
-        track.className = "mq__track";
-
-        var first = document.createElement("span");
-        first.className = "mq__item";
-        while (posterTitleEl.firstChild) first.appendChild(posterTitleEl.firstChild);
-        track.appendChild(first);
-
-        var clones = [];
-        for (var i = 0; i < 3; i++) {
-          var clone = document.createElement("span");
-          clone.className = "mq__item";
-          clone.setAttribute("aria-hidden", "true");
-          clone.textContent = posterTitle;
-          track.appendChild(clone);
-          clones.push(clone);
-        }
-
-        posterTitleEl.appendChild(track);
-        posterTitleEl.classList.add("is-marquee");
-
-        if (window.MutationObserver) {
-          new MutationObserver(function () {
-            var t = first.textContent;
-            clones.forEach(function (c) { c.textContent = t; });
-          }).observe(first, { characterData: true, childList: true, subtree: true });
-        }
-
-        /* xPercent, not a measured pixel distance — the loop stays seamless
-           even after the display font swaps in and changes the width */
-        var loop = gsap.to(track, { xPercent: -50, duration: 22, ease: "none", repeat: -1 });
-        ScrollTrigger.create({
-          trigger: document.body,
-          start: "top top",
-          end: "bottom bottom",
-          onUpdate: function (self) {
-            var v = self.getVelocity() / 1000;
-            gsap.to(loop, {
-              timeScale: gsap.utils.clamp(-4, 6, 1 + v * 1.4),
-              duration: 0.4,
-              overwrite: true
-            });
-          }
-        });
-      })();
-    }
-
-    /* --- the statement fills in line by line as it passes --- */
-    (function () {
-      var lead = document.querySelector(".proj-lead .lead");
-      if (!lead) return;
-      lead.classList.add("is-swept");
-      gsap.fromTo(lead,
-        { "--sweep": "0%" },
-        {
-          "--sweep": "100%",
-          ease: "none",
-          scrollTrigger: { trigger: lead, start: "top 80%", end: "bottom 55%", scrub: 0.4 }
-        }
-      );
-    })();
-
-    /* --- the lead image is cut in from the left, not faded in ---
-       Gallery prints are deliberately left out: inside the pinned strip
-       they all sit at the same scroll depth, so a per-image trigger would
-       fire them simultaneously anyway. */
-    gsap.utils.toArray(".proj-lead .print").forEach(function (frame) {
-      var img = frame.querySelector("img");
-      if (!img) return;
-      gsap.fromTo(img,
-        { clipPath: "inset(0 100% 0 0)" },
-        {
-          clipPath: "inset(0 0% 0 0)",
-          duration: 1.1,
-          ease: "expo.out",
-          scrollTrigger: { trigger: frame, start: "top 88%" }
-        }
-      );
-    });
-
-    /* --- documentation strip: the page scroll drives it sideways ---
-       Desktop only. On touch and narrow windows the strip stays the
-       native horizontal scroller it already is, arrows included. */
-    (function () {
-      if (!window.matchMedia("(min-width: 821px)").matches) return;
-      var car = document.querySelector(".proj-gallery .photo-carousel");
-      if (!car) return;
-      var track = car.querySelector(".photo-carousel__track");
-      if (!track || track.querySelectorAll(".print").length < 3) return;
-
-      car.classList.add("is-pinned");
-      function distance() {
-        return Math.max(0, track.scrollWidth - window.innerWidth + 80);
-      }
-      gsap.to(track, {
-        x: function () { return -distance(); },
-        ease: "none",
-        scrollTrigger: {
-          trigger: car,
-          start: "center center",
-          end: function () { return "+=" + distance(); },
-          pin: true,
-          scrub: 0.6,
-          anticipatePin: 1,
-          invalidateOnRefresh: true
-        }
-      });
-    })();
-
-    /* --- status bar: which project, how far in --- */
-    (function () {
-      var bar = document.createElement("div");
-      bar.className = "poster-statusbar";
-      bar.setAttribute("aria-hidden", "true");
-      bar.innerHTML =
-        '<span class="poster-statusbar__fill"></span>' +
-        '<span class="poster-statusbar__name"></span>' +
-        '<span class="poster-statusbar__mid">AMIEL.STUDIO — FORM FOLLOWS FUN</span>' +
-        '<span><span class="poster-statusbar__pct">000</span>%</span>';
-      bar.querySelector(".poster-statusbar__name").textContent = posterLabel;
-      document.body.appendChild(bar);
-      document.body.classList.add("has-statusbar");
-
-      var fill = bar.querySelector(".poster-statusbar__fill");
-      var pct = bar.querySelector(".poster-statusbar__pct");
-      ScrollTrigger.create({
-        trigger: document.body,
-        start: "top top",
-        end: "bottom bottom",
-        onUpdate: function (self) {
-          gsap.set(fill, { width: (self.progress * 100) + "%" });
-          var s = String(Math.round(self.progress * 100));
-          pct.textContent = s.length < 2 ? "00" + s : s.length < 3 ? "0" + s : s;
-        }
-      });
-    })();
-
-    /* --- cursor disc: inverts over the black blocks ----------
-       Labels are arrows/glyphs rather than words on purpose: the disc is
-       built in JS, so the language toggle (which collects text nodes once,
-       before this runs) could never translate a word in here. */
-    if (posterFine) {
-      (function () {
-        var dot = document.createElement("div");
-        dot.className = "poster-dot";
-        dot.setAttribute("aria-hidden", "true");
-        dot.appendChild(document.createElement("span"));
-        document.body.appendChild(dot);
-        document.documentElement.classList.add("poster-cursor");
-
-        var label = dot.firstChild;
-        gsap.set(dot, { xPercent: -50, yPercent: -50 });
-        var qx = gsap.quickTo(dot, "x", { duration: 0.28, ease: "power3" });
-        var qy = gsap.quickTo(dot, "y", { duration: 0.28, ease: "power3" });
-        window.addEventListener("pointermove", function (e) { qx(e.clientX); qy(e.clientY); });
-
-        document.querySelectorAll(
-          ".photo-carousel__track .print, .proj-lead .print, " +
-          ".work-row__media, .product-card, .collage-card, a, button")
-          .forEach(function (el) {
-            var glyph = "";
-            if (el.classList.contains("print")) {
-              glyph = el.closest(".photo-carousel__track") ? "↔" : "◑";
-            } else if (el.classList.contains("work-row__media") ||
-                       el.classList.contains("product-card") ||
-                       el.classList.contains("collage-card")) {
-              /* the greyscale-to-colour cards get the same "point at me" disc */
-              glyph = "◑";
-            }
-            el.addEventListener("pointerenter", function () {
-              gsap.to(dot, { width: glyph ? 76 : 40, height: glyph ? 76 : 40, duration: 0.3, ease: "power3" });
-              label.textContent = glyph;
-              gsap.to(label, { opacity: glyph ? 1 : 0, duration: 0.2 });
-            });
-            el.addEventListener("pointerleave", function () {
-              gsap.to(dot, { width: 16, height: 16, duration: 0.3, ease: "power3" });
-              gsap.to(label, { opacity: 0, duration: 0.15 });
-            });
-          });
-      })();
-    }
   }
 
   /* ---------- clean · scroll block interaction (touch only) ----------
@@ -1430,10 +1204,8 @@
     }
   });
 
-  /* ---------- magnetic buttons (die-cut bold only, fine pointers only) ----------
-     Poster pages opt out: magnetic pills belong to the tactile paper
-     language, not to the hard-edged poster one. */
-  if (!themeClean && !posterPage && window.matchMedia("(pointer: fine)").matches) {
+  /* ---------- magnetic buttons (bold only, fine pointers only) ---------- */
+  if (!themeClean && window.matchMedia("(pointer: fine)").matches) {
     document.querySelectorAll(".btn, .nav-cta").forEach(function (btn) {
       var qx = gsap.quickTo(btn, "x", { duration: 0.35, ease: "power3.out" });
       var qy = gsap.quickTo(btn, "y", { duration: 0.35, ease: "power3.out" });
