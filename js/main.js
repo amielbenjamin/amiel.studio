@@ -1232,76 +1232,16 @@
       );
     });
 
-    /* --- documentation strip: the page scroll drives it sideways ---
-       Desktop only. On touch and narrow windows the strip stays the
-       native horizontal scroller it already is, arrows included. */
-    (function () {
-      if (!window.matchMedia("(min-width: 821px)").matches) return;
-      var car = document.querySelector(".proj-gallery .photo-carousel");
-      if (!car) return;
-      var track = car.querySelector(".photo-carousel__track");
-      if (!track || track.querySelectorAll(".print").length < 3) return;
-
-      /* the pin's scroll length is derived from track.scrollWidth, which
-         is only trustworthy once every print has actually finished
-         loading — a still-loading (or, per the HTML default,
-         still-lazy) image has no reliable rendered width, so measuring
-         early undershoots the real width. Because that same distance
-         also caps how far the visitor can ever scroll, an undershoot is
-         permanent: prints past the wrong-too-short distance can never
-         be scrolled near enough to load, so the measurement never gets
-         a chance to correct itself. So: force every print to load, and
-         only turn on the pin once all of them are actually in. Until
-         then the section stays the plain native horizontal scroller —
-         every print stays reachable regardless of how long loading
-         takes. */
-      var trackImgs = Array.prototype.slice.call(track.querySelectorAll("img"));
-
-      function distance() {
-        return Math.max(0, track.scrollWidth - window.innerWidth + 80);
-      }
-
-      function setupPin() {
-        /* the prints have a capped pixel size (see CSS), so the track's
-           width does not grow with a wider viewport. On a screen wide
-           enough to already fit every print, distance() collapses to 0 —
-           a zero-length pin that grabs the section and releases it again
-           without ever translating the track. If nothing needs to
-           travel, skip the pin and keep the native horizontal scroller. */
-        if (distance() === 0) return;
-
-        car.classList.add("is-pinned");
-        gsap.to(track, {
-          x: function () { return -distance(); },
-          ease: "none",
-          scrollTrigger: {
-            trigger: car,
-            start: "center center",
-            end: function () { return "+=" + distance(); },
-            pin: true,
-            scrub: 0.6,
-            anticipatePin: 1,
-            invalidateOnRefresh: true
-          }
-        });
-      }
-
-      trackImgs.forEach(function (img) { img.loading = "eager"; });
-      var pending = trackImgs.filter(function (img) { return !img.complete; });
-      if (!pending.length) {
-        setupPin();
-      } else {
-        var left = pending.length;
-        function checkDone() {
-          left--;
-          if (left === 0) setupPin();
-        }
-        pending.forEach(function (img) {
-          img.addEventListener("load", checkDone, { once: true });
-          img.addEventListener("error", checkDone, { once: true });
-        });
-      }
-    })();
+    /* --- documentation strip ---
+       A plain native horizontal scroller at every viewport size, prev/next
+       buttons and arrow keys included. A scroll-jacked (pinned + transformed)
+       version used to take over at wider viewports, driving the strip
+       sideways as the page scrolled; it depended on measuring the track's
+       full width up front, and any viewport/aspect-ratio/timing combination
+       that measured it wrong left prints permanently unreachable. The native
+       scroller has no such measurement to get wrong — every print is always
+       directly reachable — so that version is gone for good rather than
+       patched again. */
 
     /* --- status bar: which project, how far in --- */
     (function () {

@@ -2762,13 +2762,6 @@ body { overflow-x: clip; }   /* also set in the base reset — kept explicit her
   transform: none;
   box-shadow: none;
 }
-/* while the gallery is pinned the page scroll drives it -- the buttons
-   would fight the transform, so they step aside */
-[data-theme="bold"][data-page="case"] .photo-carousel.is-pinned .photo-carousel__track {
-  overflow: hidden;
-  scroll-snap-type: none;
-}
-[data-theme="bold"][data-page="case"] .photo-carousel.is-pinned .photo-carousel__nav { display: none; }
 [data-theme="bold"][data-page="case"] .proj-gallery .carousel-btn {
   background: transparent;
   color: var(--paper);
