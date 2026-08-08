@@ -19,7 +19,7 @@
     /* clean theme wants a light-grey outlined cube whose faces bloom with a
        pink gradient on hover; bold keeps its hot-pink sticker faces */
     var cubeClean = document.documentElement.getAttribute("data-theme") === "clean";
-    var faceBg = cubeClean ? "#E7E7EA" : "var(--pink)";
+    var faceBg = cubeClean ? "#E7E7EA" : "var(--pink-hot, var(--pink))";
     var faceBorder = cubeClean ? "2px solid rgba(20, 20, 24, .16)" : "3px solid var(--ink, #16161a)";
     var faceText = cubeClean ? "var(--ink, #1a1a1a)" : "var(--white, #fff)";
     /* clean hover: a white→pink wash. NOTE the pink is the literal signature
@@ -1242,23 +1242,65 @@
       var track = car.querySelector(".photo-carousel__track");
       if (!track || track.querySelectorAll(".print").length < 3) return;
 
-      car.classList.add("is-pinned");
+      /* the pin's scroll length is derived from track.scrollWidth, which
+         is only trustworthy once every print has actually finished
+         loading — a still-loading (or, per the HTML default,
+         still-lazy) image has no reliable rendered width, so measuring
+         early undershoots the real width. Because that same distance
+         also caps how far the visitor can ever scroll, an undershoot is
+         permanent: prints past the wrong-too-short distance can never
+         be scrolled near enough to load, so the measurement never gets
+         a chance to correct itself. So: force every print to load, and
+         only turn on the pin once all of them are actually in. Until
+         then the section stays the plain native horizontal scroller —
+         every print stays reachable regardless of how long loading
+         takes. */
+      var trackImgs = Array.prototype.slice.call(track.querySelectorAll("img"));
+
       function distance() {
         return Math.max(0, track.scrollWidth - window.innerWidth + 80);
       }
-      gsap.to(track, {
-        x: function () { return -distance(); },
-        ease: "none",
-        scrollTrigger: {
-          trigger: car,
-          start: "center center",
-          end: function () { return "+=" + distance(); },
-          pin: true,
-          scrub: 0.6,
-          anticipatePin: 1,
-          invalidateOnRefresh: true
+
+      function setupPin() {
+        /* the prints have a capped pixel size (see CSS), so the track's
+           width does not grow with a wider viewport. On a screen wide
+           enough to already fit every print, distance() collapses to 0 —
+           a zero-length pin that grabs the section and releases it again
+           without ever translating the track. If nothing needs to
+           travel, skip the pin and keep the native horizontal scroller. */
+        if (distance() === 0) return;
+
+        car.classList.add("is-pinned");
+        gsap.to(track, {
+          x: function () { return -distance(); },
+          ease: "none",
+          scrollTrigger: {
+            trigger: car,
+            start: "center center",
+            end: function () { return "+=" + distance(); },
+            pin: true,
+            scrub: 0.6,
+            anticipatePin: 1,
+            invalidateOnRefresh: true
+          }
+        });
+      }
+
+      trackImgs.forEach(function (img) { img.loading = "eager"; });
+      var pending = trackImgs.filter(function (img) { return !img.complete; });
+      if (!pending.length) {
+        setupPin();
+      } else {
+        var left = pending.length;
+        function checkDone() {
+          left--;
+          if (left === 0) setupPin();
         }
-      });
+        pending.forEach(function (img) {
+          img.addEventListener("load", checkDone, { once: true });
+          img.addEventListener("error", checkDone, { once: true });
+        });
+      }
     })();
 
     /* --- status bar: which project, how far in --- */

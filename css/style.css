@@ -694,11 +694,11 @@ body.menu-open { overflow: hidden; }
   font-family: var(--font-mono);
   font-size: .8rem;
   padding: .4rem .85rem;
-  background: var(--navy);
+  background: var(--pink-deep);
   color: var(--white);
   border-radius: 999px;
   transform: rotate(-6deg);
-  box-shadow: 0 6px 14px hsla(209, 60%, 8%, .3);
+  box-shadow: 0 6px 14px hsla(326, 84%, 30%, .3);
 }
 
 .work-row__body h3 {
@@ -719,7 +719,7 @@ body.menu-open { overflow: hidden; }
   gap: .45rem;
   margin-bottom: 1.1rem;
 }
-.work-row__tags .chip { background: hsla(0, 0%, 100%, .65); border-color: var(--navy); color: var(--navy); }
+.work-row__tags .chip { background: hsla(0, 0%, 100%, .65); border-color: var(--pink-deep); color: var(--pink-deep); }
 
 /* ============================================================
    Product — white staggered spec grid
@@ -832,8 +832,9 @@ body.menu-open { overflow: hidden; }
   font-weight: 700;
   font-size: 1.08rem;
   margin-bottom: .55rem;
+  color: var(--ink);
 }
-.collage-card__body p { font-size: .92rem; opacity: .85; }
+.collage-card__body p { font-size: .92rem; color: var(--ink); opacity: 1; }
 
 .collage-card--a { grid-column: 1 / span 7; transform: rotate(-1.6deg); z-index: 2; }
 .collage-card--b { grid-column: 7 / span 6; margin-top: -3rem; transform: rotate(1.8deg); z-index: 3; }
@@ -2977,12 +2978,12 @@ html.poster-cursor label { cursor: none; }
   transform: none;
   border: 0;
   background: var(--pink-hot);
-  color: var(--white);
+  color: var(--ink);
 }
 [data-theme="bold"][data-page="home"] .ticker__inner span { letter-spacing: .06em; }
 [data-theme="bold"][data-page="home"] .ticker__inner span::after {
   content: "/";
-  color: var(--white);
+  color: var(--ink);
   opacity: .5;
   margin-left: 2.2rem;
 }
@@ -3086,7 +3087,7 @@ html.poster-cursor label { cursor: none; }
 
 /* ---------- 03 experience: black room ---------- */
 [data-theme="bold"][data-page="home"] .work { background: var(--ink); color: var(--paper); }
-[data-theme="bold"][data-page="home"] .work .sec-title { color: var(--paper); text-shadow: none; }
+[data-theme="bold"][data-page="home"] .work .sec-title { color: var(--pink-hot); text-shadow: none; }
 [data-theme="bold"][data-page="home"] .work .sec-note { color: var(--paper); opacity: .72; }
 [data-theme="bold"][data-page="home"] .work-row__num { color: var(--pink-hot); }
 /* h3/p on .work-row are hardcoded to --navy for the die-cut paper hero --
